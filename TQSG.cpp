@@ -29,6 +29,7 @@
 
 // Tricky's Units
 #include <QuickStream.hpp>
+#include <QuickString.hpp>
 
 // JCR6
 #include <jcr6_core.hpp>
@@ -42,6 +43,8 @@ namespace TrickyUnits {
 	static SDL_Renderer* gRenderer;
 
 	double scalex = 1, scaley = 1;
+
+	string TQSG_GetError() { return LastError; }
 
 	void TQSG_Image::LoadRWops(SDL_RWops* data, int frame, int autofree) {
 		LastError = "";
@@ -68,6 +71,7 @@ namespace TrickyUnits {
 
 	TQSG_Image::TQSG_Image(std::string file) {
 		LastError = "";
+		Textures.clear(); // Should not be needed, but to be 100% sure!
 		if (!FileExists(file)) {
 			LastError = "File \"" + file + "\" not found";
 			return;
@@ -75,7 +79,63 @@ namespace TrickyUnits {
 		if (jcr6::Recognize(file) != "") {
 			LastError = "No support for bundled jcr yet!\nRome wasn't built in one day either, you know!";
 		}
-		LastError = "Feature still W.I.P";
+		SDL_Surface* loadedSurface = IMG_Load(file.c_str());
+		if (loadedSurface == NULL) {
+			char FE[300];
+			sprintf_s(FE, 295, "Unable to load image %s!\nSDL_image Error: %s", file.c_str(), IMG_GetError());
+			LastError = FE;
+			return;
+		}
+		//Create texture from surface pixels
+		auto newTexture = SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
+		if (newTexture == NULL) {
+			char FE[300];
+			sprintf_s(FE, 295, "Unable to create texture from %s!\nSDL Error: %s", file.c_str(), SDL_GetError());
+			LastError = FE;
+			return;
+		}
+		Textures.push_back(newTexture);
+	}
+
+	static SDL_Texture* Tex_From_JCR(jcr6::JT_Dir& JD, std::string entry) {
+		SDL_RWops* RWBuf = NULL;
+		jcr6::JT_Entry E = JD.Entry(entry);
+		jcr6::JT_EntryReader buf;
+		JD.B(entry, buf);
+		RWBuf = SDL_RWFromMem(buf.pointme(), buf.getsize());
+		SDL_Texture* ret = IMG_LoadTexture_RW(gRenderer, RWBuf, 1);
+		return ret;
+	}
+
+	void TQSG_Image::TrueLoadJCR(jcr6::JT_Dir& JCR, std::string entry) {
+		LastError = "";
+		Textures.clear();
+		if (JCR.EntryExists(entry)) {
+			// Load Entry
+			Textures.push_back(Tex_From_JCR(JCR, entry));
+		}
+		else if (JCR.DirectoryExists(entry)) {
+			// Bundle
+			auto ue = TReplace(Upper(entry), '\\', '/');
+			if (!suffixed(ue, "/")) ue += "/";
+			for (auto LT : JCR.Entries()) {
+				if (prefixed(LT.first, ue)) Textures.push_back(Tex_From_JCR(JCR, LT.first));
+			}
+		}
+		else {
+			char FE[300];
+			sprintf_s(FE, 295, "I could not find any JCR data for image \"%s\"!", entry.c_str());
+			LastError = FE;
+		}
+	}
+
+	TQSG_Image::TQSG_Image(jcr6::JT_Dir& JCR, std::string entry) {
+		TrueLoadJCR(JCR, entry);
+	}
+
+	TQSG_Image::TQSG_Image(std::string mainfile, std::string entry) {
+		auto J = jcr6::Dir(mainfile);
+		TrueLoadJCR(J, entry);
 	}
 
 	void TQSG_Image::Draw(int x, int y, int frame) {
@@ -127,5 +187,13 @@ namespace TrickyUnits {
 	void GetScale(double& x, double& y) {
 		x = scalex;
 		y = scaley;
+	}
+
+	void TQSG_Init() {
+		// TODO!
+	}
+
+	void TQSG_Close() {
+		// TODO!
 	}
 }

@@ -51,9 +51,12 @@ namespace TrickyUnits {
 		std::vector<SDL_Texture*> Textures;
 		int hotx=0, hoty=0;
 		void LoadRWops(SDL_RWops* data, int frame=-1, int autofree = 1);
+		void TrueLoadJCR(jcr6::JT_Dir& JCR, std::string entry);
 	public:
 		TQSG_Image(SDL_RWops* data, int autofree = 1);
 		TQSG_Image(std::string file);
+		TQSG_Image(jcr6::JT_Dir& JCR, std::string entry);
+		TQSG_Image(std::string mainfile, std::string entry);
 		/// <summary>
 		/// Draws an image with the basic settings
 		/// </summary>
@@ -69,7 +72,10 @@ namespace TrickyUnits {
 		~TQSG_Image();
 	};
 
-
+	std::string TQSG_GetError();
 	void SetScale(double x=1, double y=1);
 	void GetScale(double& x, double& y);
+
+	void TQSG_Init();
+	void TQSG_Close();
 }
