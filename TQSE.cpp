@@ -1,8 +1,8 @@
 // Lic:
 // TQSE.cpp
 // Tricky's Quick SDL Events
-// version: 20.08.25
-// Copyright (C) Tricky's Quick SDL Events Jeroen P. Broks
+// version: 20.08.27
+// Copyright (C) 2020 Jeroen P. Broks
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
 // arising from the use of this software.
