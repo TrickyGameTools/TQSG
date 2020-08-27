@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include <SDL.h>
+
 namespace TrickyUnits {
 
 	/// <summary>Sets the startup data for TQSE. Please note unloading is not required as no pointers are used or memory is being allocated. This routine is only to make sure that all start values are correct!</summary>
@@ -34,5 +36,6 @@ namespace TrickyUnits {
 	bool TQSE_Quit();
 
 	bool TQSE_KeyHit(SDL_KeyCode c);
+	bool TQSE_KeyDown(SDL_KeyCode c);
 
 }

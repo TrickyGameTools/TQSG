@@ -141,14 +141,17 @@ namespace TrickyUnits {
 	void GetScale(double& x, double& y);
 	void TQSG_Flip();
 
-	void TQMG_Color(Uint8 r, Uint8 g, Uint8 b);
-	void TQMG_GetColor(Uint8* r, Uint8* g, Uint8* b);
-	void TQMG_SetAlpha(Uint8 a);
-	Uint8 TQMG_GetAlpha();
+	void TQSG_Color(Uint8 r, Uint8 g, Uint8 b);
+	void TQSG_GetColor(Uint8* r, Uint8* g, Uint8* b);
+	void TQSG_SetAlpha(Uint8 a);
+	Uint8 TQSG_GetAlpha();
 
-	void TQMG_Rect(int s, int y, int w, int h);
+	void TQSG_Rect(int x, int y, int w, int h);
+	void TQSG_Circle(int x, int y, int radius);
 	void TQSG_ClsColor(int r, int g, int b);
 	void TQSG_Cls();
+
+	void TQSG_Plot(int x, int y);
 
 	int TQSG_ScreenWidth();
 	int TQSG_ScreenHeight();

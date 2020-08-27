@@ -361,4 +361,8 @@ namespace TrickyUnits {
         return stKeyHit[c];
     }
 
+    bool TQSE_KeyDown(SDL_KeyCode c) {
+        return stKeyDown[c];
+    }
+
 }

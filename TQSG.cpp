@@ -35,7 +35,7 @@
 // JCR6
 #include <jcr6_core.hpp>
 
-#define TQSG_Debug
+#undef TQSG_Debug
 
 using namespace std;
 
@@ -233,6 +233,11 @@ namespace TrickyUnits {
 		SDL_SetRenderDrawColor(gRenderer, r,g,b,a);		
 	}
 
+	void TQSG_Plot(int x, int y) {
+		SDL_SetRenderDrawColor(gRenderer, tcr, tcg, tcb,tcalpha);
+		SDL_RenderDrawPoint(gRenderer,x, y);
+	}
+
 	int TQSG_ScreenWidth() {
 		int w, h;
 		SDL_GetRendererOutputSize(gRenderer, &w, &h);
@@ -254,29 +259,43 @@ namespace TrickyUnits {
 		SDL_RenderPresent(gRenderer);
 	}
 
-	void TQMG_Color(Uint8 r, Uint8 g, Uint8 b)	{
+	void TQSG_Color(Uint8 r, Uint8 g, Uint8 b)	{
 		tcr = r;
 		tcg = g;
 		tcb = b;
 	}
 
-	void TQMG_GetColor(Uint8* r, Uint8* g, Uint8* b) {
+	void TQSG_GetColor(Uint8* r, Uint8* g, Uint8* b) {
 		*r = tcr;
 		*g = tcg;
 		*b = tcb;
 	}
 
-	void TQMG_SetAlpha(Uint8 a) {
+	void TQSG_SetAlpha(Uint8 a) {
 		tcalpha = a;
 	}
 
-	Uint8 TQMG_GetAlpha() {
+	Uint8 TQSG_GetAlpha() {
 		return tcalpha;
 	}
 
-	void TQMG_Rect(int s, int y, int w, int h) {
+	void TQSG_Rect(int x, int y, int w, int h) {
 		//SDL_FillRect(gScreenSurface, NULL, SDL_MapRGB(gScreenSurface->format, 0xFF, 0x00, 0xFF));
-		printf("WARNING! Rect not fully implemented yet"); 
+		//printf("WARNING! Rect not fully implemented yet"); 
+		SDL_Rect r;
+		r.x = x;
+		r.y = y;
+		r.w = w;
+		r.h = h;
+		SDL_SetRenderDrawColor(gRenderer, tcr, tcg, tcb, tcalpha);
+		SDL_RenderDrawRect(gRenderer, &r);
+	}
+
+	void TQSG_Circle(int x, int y, int radius) {
+		SDL_SetRenderDrawColor(gRenderer, tcr, tcg, tcb, tcalpha);
+		for (double i = 0; i < 2 * 3.14; i += .1) {
+			SDL_RenderDrawPoint(gRenderer, floor(sin(i) * radius) + x, floor(cos(i) * radius) + y);
+		}
 	}
 
 	bool TQSG_Init(string WindowTitle,int WinWidth,int WinHeight,bool fullscreen) {
@@ -542,13 +561,56 @@ namespace TrickyUnits {
 		TriedToLoad.clear();
 	}
 
-#pragma message ("TextWidth NOT yet done, so always returning 0 for now (unless fixed)")
+// #pragma message ("TextWidth NOT yet done, so always returning 0 for now (unless fixed)")
 	int TQSG_ImageFont::TextWidth(const char* txt) {
-		if (Fixed) return (int)strlen(txt) * width;
-		return 0;
+		int pos = 0;
+		int maxw = 0;
+		int tempw = 0;
+		while (txt[pos]) {
+			if (txt[pos] == '\n')
+				tempw = 0;
+			else if (txt[pos]=='|') {
+				if (Fixed) {
+					pos += 2;
+					tempw += width;
+				} else {
+					Uint8 base = txt[pos + 1];
+					Uint8 ch = txt[pos + 2];
+					if (Letter.count(base) == 0 || Letter[base].count(ch) == 0) SubLoad(base, ch);
+					int w, h;
+					SDL_QueryTexture(Letter[base][ch], NULL, NULL, &w, &h);
+					tempw += w;
+					pos += 2;
+				}
+			} else if (Fixed)
+				tempw += width;
+			else {
+				auto ch = txt[pos];
+				if (Letter.count(0) == 0 || Letter[0].count(ch) == 0) SubLoad(0, ch);
+				int w, h;
+				SDL_QueryTexture(Letter[0][ch], NULL, NULL, &w, &h);
+				tempw += w;
+			}
+			if (tempw > maxw) maxw = tempw;
+			pos++;
+		}
+		//if (Fixed) return (int)strlen(txt) * width;
+		return maxw;
 	}
+
 	int TQSG_ImageFont::TextHeight(const char* txt) {
-		return height;
+		int pos=0;
+		int lines=1;
+		if (txt[0] == 0) return 0; // No need to check the rest!
+		while (txt[pos]) {
+			if (txt[pos] == '|')
+				pos += 2; // No need to check more out! 
+			else if (txt[pos] == '\n')
+				lines++;
+			pos++;
+		}
+		//printf("<TextHeight height='%d' lines='%d' return='%d' >\n%s\n</TextHeight>\n",height,lines,height*lines,txt); // debug
+		return height*lines;
 		// This is not entirely correct since line breaks can exist... Oh well.
 	}
 
