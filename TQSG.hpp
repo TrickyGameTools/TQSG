@@ -1,7 +1,7 @@
 // Lic:
 // TQSG.hpp
 // TQSG Header
-// version: 20.08.27
+// version: 20.08.28
 // Copyright (C) 2020 Jeroen P. Broks
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
@@ -78,6 +78,9 @@ namespace TrickyUnits {
 		/// Use with CARE! This will destroy all textures stored in this object! Please note, the destructor calls this feature automatically.
 		/// </summary>
 		void KillAll();
+		void Hot(int x, int y);
+		void HotCenter();
+		void HotBottomCenter();
 		~TQSG_Image();
 	};
 
@@ -146,8 +149,9 @@ namespace TrickyUnits {
 	void TQSG_SetAlpha(Uint8 a);
 	Uint8 TQSG_GetAlpha();
 
-	void TQSG_Rect(int x, int y, int w, int h);
+	void TQSG_Rect(int x, int y, int w, int h,bool open=false);
 	void TQSG_Circle(int x, int y, int radius);
+	void TQSG_Line(int x1, int y1, int x2, int y2);
 	void TQSG_ClsColor(int r, int g, int b);
 	void TQSG_Cls();
 

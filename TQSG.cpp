@@ -1,7 +1,7 @@
 // Lic:
 // TQSG.cpp
 // TQSG Code
-// version: 20.08.27
+// version: 20.08.28
 // Copyright (C) 2020 Jeroen P. Broks
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
@@ -201,6 +201,23 @@ namespace TrickyUnits {
 		for (int i = 0; i < Textures.size(); ++i) SDL_DestroyTexture(Textures[i]);
 	}
 
+	void TQSG_Image::Hot(int x, int y) {
+		hotx = x;
+		hoty = y;
+	}
+
+	void TQSG_Image::HotCenter() {
+		hotx = floor(Width() / 2);
+		hoty = floor(Height() / 2);
+	}
+
+	void TQSG_Image::HotBottomCenter() {
+		hotx = floor(Width() / 2);
+		hoty = Height();
+	}
+
+	
+
 
 	TQSG_Image::~TQSG_Image() {
 		if (AutoClean) KillAll();
@@ -279,23 +296,36 @@ namespace TrickyUnits {
 		return tcalpha;
 	}
 
-	void TQSG_Rect(int x, int y, int w, int h) {
+	void TQSG_Rect(int x, int y, int w, int h,bool open) {
 		//SDL_FillRect(gScreenSurface, NULL, SDL_MapRGB(gScreenSurface->format, 0xFF, 0x00, 0xFF));
 		//printf("WARNING! Rect not fully implemented yet"); 
 		SDL_Rect r;
 		r.x = x;
 		r.y = y;
 		r.w = w;
-		r.h = h;
+		r.h = h;		
 		SDL_SetRenderDrawColor(gRenderer, tcr, tcg, tcb, tcalpha);
-		SDL_RenderDrawRect(gRenderer, &r);
+		if (open)
+			SDL_RenderDrawRect(gRenderer, &r);
+		else
+			SDL_RenderFillRect(gRenderer, &r);
 	}
 
 	void TQSG_Circle(int x, int y, int radius) {
 		SDL_SetRenderDrawColor(gRenderer, tcr, tcg, tcb, tcalpha);
-		for (double i = 0; i < 2 * 3.14; i += .1) {
-			SDL_RenderDrawPoint(gRenderer, floor(sin(i) * radius) + x, floor(cos(i) * radius) + y);
+		float lastx = x, lasty = (radius)+y;
+		for (double i = 0; i < 2 * 3.14; i += 0.025) {
+			//SDL_RenderDrawPoint(gRenderer, floor(sin(i) * radius) + x, floor(cos(i) * radius) + y);			
+			//SDL_RenderDrawPoint(gRenderer, (sin(i) * radius) + x, (cos(i) * radius) + y);
+			float cx = (sin(i) * radius) + x, cy = (cos(i) * radius) + y;
+			SDL_RenderDrawLine(gRenderer, lastx, lasty, cx, cy);
+			lastx = cx; lasty = cy;
 		}
+	}
+
+	void TQSG_Line(int x1, int y1, int x2, int y2) {
+		SDL_SetRenderDrawColor(gRenderer, tcr, tcg, tcb, tcalpha);
+		SDL_RenderDrawLine(gRenderer, x1, y1, x2, y2);		
 	}
 
 	bool TQSG_Init(string WindowTitle,int WinWidth,int WinHeight,bool fullscreen) {
