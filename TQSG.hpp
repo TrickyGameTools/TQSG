@@ -1,7 +1,7 @@
 // Lic:
 // TQSG.hpp
 // TQSG Header
-// version: 20.08.28
+// version: 20.08.29
 // Copyright (C) 2020 Jeroen P. Broks
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
@@ -36,7 +36,7 @@
 // SDL
 #include <SDL.h>
 #include <SDL_image.h>
-#include <SDL_ttf.h>
+// #include <SDL_ttf.h>
 
 // JCR6
 #include <jcr6_core.hpp>
@@ -129,8 +129,9 @@ namespace TrickyUnits {
 
 		void DrawLetter(Uint8 base, Uint8 ch,int x, int y);
 
-		void Draw(const char* txt, int x, int y, unsigned char ha = 0, unsigned char va = 0);
-		void Draw(std::string txt, int x, int y, unsigned char ha = 0, unsigned char va = 0);
+		void Draw(const char* txt, int x, int y, unsigned char ha = 0, unsigned char va = 0,int autonext=0);
+		void Draw(std::string txt, int x, int y, unsigned char ha = 0, unsigned char va = 0,int autonext=0);
+		int LastAutoNextCount = 1;
 		//void LoadFont(SDL_RWops* buf, int size = 24, int autofree = 1);
 		void LoadFont(jcr6::JT_Dir& JCRRes, std::string Bundle, bool all=false);
 		void LoadFont(std::string JCRFile, std::string Bundle, bool all=false);

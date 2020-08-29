@@ -1,7 +1,7 @@
 // Lic:
 // TQSG.cpp
 // TQSG Code
-// version: 20.08.28
+// version: 20.08.29
 // Copyright (C) 2020 Jeroen P. Broks
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
@@ -332,7 +332,7 @@ namespace TrickyUnits {
 		printf("Starting graphics screen: %dx%d; fullscreen=%d\n", WinWidth, WinHeight, fullscreen);
 		// TODO!
 				//Initialize SDL
-		if (SDL_Init(SDL_INIT_VIDEO) < 0)
+		if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
 		{
 			printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
 			return false; //success = false;
@@ -401,7 +401,7 @@ namespace TrickyUnits {
 	}
 
 	void TQSG_Close() {
-		TTF_Quit();
+		//TTF_Quit();
 		IMG_Quit();
 		SDL_DestroyRenderer(gRenderer);
 		SDL_DestroyWindow(gWindow);
@@ -660,7 +660,30 @@ namespace TrickyUnits {
 		SDL_RenderCopy(gRenderer, Letter[base][ch], NULL, &Target);
 	}
 
-	void TQSG_ImageFont::Draw(const char* txt, int x, int y, unsigned char ha, unsigned char va) {
+	void TQSG_ImageFont::Draw(const char* txt, int x, int y, unsigned char ha, unsigned char va,int autonext) {
+		if (!txt[0]) return;
+		if (autonext) {
+			string w = txt;
+			vector<string> Lijst;
+			string t = "";
+			for (int i = 0; txt[i]; i++) {
+				string tw = t + txt[i];
+				if (x+TextWidth(tw.c_str())>autonext){
+					Lijst.push_back(t);
+					t = "" + txt[i];
+				} else {
+					t += txt[i];
+				}
+			}
+			Lijst.push_back(t);
+			int ty = y;
+			for (auto txt : Lijst) {
+				Draw(txt.c_str(), x, ty, ha, va, 0);
+				ty += TextHeight(txt.c_str());
+			}
+			LastAutoNextCount = Lijst.size();
+			return;
+		}
 		int mx = 0, my = 0;
 		switch (ha) {
 		case 0: break;
@@ -720,8 +743,8 @@ namespace TrickyUnits {
 		}
 	}
 
-	void TQSG_ImageFont::Draw(std::string txt, int x, int y, unsigned char ha, unsigned char va) {
-		Draw(txt.c_str(), x, y, ha, va);
+	void TQSG_ImageFont::Draw(std::string txt, int x, int y, unsigned char ha, unsigned char va,int autonext) {
+		Draw(txt.c_str(), x, y, ha, va,autonext);
 	}
 
 	void TQSG_ImageFont::LoadFont(jcr6::JT_Dir& JCRRes, std::string Bundle, bool all) {
