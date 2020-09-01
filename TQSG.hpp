@@ -1,7 +1,7 @@
 // Lic:
 // TQSG.hpp
 // TQSG Header
-// version: 20.08.29
+// version: 20.09.01
 // Copyright (C) 2020 Jeroen P. Broks
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
@@ -67,9 +67,35 @@ namespace TrickyUnits {
 		void Create(jcr6::JT_Dir& JCR, std::string entry);
 		void Create(std::string mainfile, std::string entry);
 		/// <summary>
-		/// Draws an image with the basic settings
+		/// Draws an image with the basic settings. Please note, rotation and flipping settings are ignored.
 		/// </summary>
 		void Draw(int x, int y, int frame = 0);
+
+		void XDraw(int x, int y, int frame = 0);
+
+		/// <summary>
+		/// Draws and stretches an image to fit in the set square. Please note, hot spots, format ratios and all that kind of stuff is ignored. It just draws in the square set by you, and nothing more.
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="w"></param>
+		/// <param name="h"></param>
+		/// <param name="frame"></param>
+		void StretchDraw(int x, int y, int w, int h, int frame = 0);
+
+		/// <summary>
+		/// Tiles the image over the set area. Please note scaling, rotation and flipping settings are all ignored. Color is not ignored.
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="w"></param>
+		/// <param name="h"></param>
+		/// <param name="frame"></param>
+		/// <param name="ix"></param>
+		/// <param name="iy"></param>
+		void Tile(int x, int y, int w, int h, int frame = 0,int ix=0,int iy=0);
+
+
 		/// <returns>Width of image</returns>
 		int Width();
 		/// <returns>Height of image</returns>
@@ -161,6 +187,16 @@ namespace TrickyUnits {
 	int TQSG_ScreenWidth();
 	int TQSG_ScreenHeight();
 	void TQSG_ScreenSize(int* x, int* y);
+	void TQSG_ViewPort(int x, int y, int w, int h);
+	void TQSG_ViewPort();
+	void TQSG_GetViewPort(int* x, int* y, int* w, int* h);
+	void TQSG_Rotate(double degrees);
+	void TQSG_RotateRAD(double radians);
+	void TQSG_RotateGRAD(double gradians);
+	double TQSG_Rotate();
+	double TQSG_RotateRAD();
+	double TQSG_RotateGRAD();
+
 
 
 	bool TQSG_Init(std::string WindowTitle, int WinWidth = 800, int WinHeight = 600,bool fullscreen=false);

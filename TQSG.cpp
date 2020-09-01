@@ -1,6 +1,25 @@
 // Lic:
 // TQSG.cpp
 // TQSG Code
+// version: 20.09.01
+// Copyright (C) 2020 Jeroen P. Broks
+// This software is provided 'as-is', without any express or implied
+// warranty.  In no event will the authors be held liable for any damages
+// arising from the use of this software.
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+// 1. The origin of this software must not be misrepresented; you must not
+// claim that you wrote the original software. If you use this software
+// in a product, an acknowledgment in the product documentation would be
+// appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+// misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+// EndLic
+???// Lic:
+// TQSG.cpp
+// TQSG Code
 // version: 20.08.29
 // Copyright (C) 2020 Jeroen P. Broks
 // This software is provided 'as-is', without any express or implied
@@ -22,6 +41,7 @@
 // TODO: Bundle support over JCR
 
 // C++
+#include <iostream>
 #include <string>
 #include <algorithm>
 
@@ -60,6 +80,8 @@ namespace TrickyUnits {
 
 	static double scalex = 1, scaley = 1;
 	static Uint8 tcr = 255, tcg = 255, tcb = 255, tcalpha=255;
+	static double rotatedegrees = 0;
+	static SDL_RendererFlip imgflip = SDL_FLIP_NONE;
 
 	string TQSG_GetError() { return LastError; }
 
@@ -166,7 +188,7 @@ namespace TrickyUnits {
 		LastError = "";
 		if (frame < 0 || frame >= Textures.size()) {
 			char FE[400];
-			sprintf_s(FE, 395, "Texture assignment out of bouds! (%d/%d)", frame, (int)Textures.size());
+			sprintf_s(FE, 395, "DRAW:Texture frame assignment out of bouds! (%d/%d)", frame, (int)Textures.size());
 			LastError = FE;
 			return;
 		}
@@ -180,6 +202,138 @@ namespace TrickyUnits {
 		Target.h = (int)ceil(Height() * scaley);
 		SDL_RenderCopy(gRenderer, Textures[frame], NULL, &Target);
 	}
+
+	void TQSG_Image::XDraw(int x, int y, int frame) {
+		LastError = "";
+		if (frame < 0 || frame >= Textures.size()) {
+			char FE[400];
+			sprintf_s(FE, 395, "XDRAW:Texture frame assignment out of bouds! (%d/%d)", frame, (int)Textures.size());
+			LastError = FE;
+			return;
+		}
+		//printf("DEBUG! B.Color(%3d, %3d, %3d) \n", tcr, tcg, tcb);
+		SDL_SetTextureColorMod(Textures[frame], tcr, tcg, tcb);
+		//printf("DEBUG! A.Color(%3d, %3d, %3d) \n", tcr, tcg, tcb);
+		SDL_Rect Target;
+		Target.x = x -(int)ceil(hotx * scalex);
+		Target.y = y -(int)ceil(hoty * scaley);
+		Target.w = (int)ceil(Width() * scalex);
+		Target.h = (int)ceil(Height() * scaley);
+		SDL_Point cpoint;
+		cpoint.x = hotx;
+		cpoint.y = hoty;
+		//SDL_RenderCopy(gRenderer, Textures[frame], NULL, &Target);
+		SDL_RenderCopyEx(gRenderer, Textures[frame], NULL, &Target, rotatedegrees, &cpoint, imgflip);
+
+	}
+
+
+
+	void TQSG_Image::StretchDraw(int x, int y, int w, int h, int frame) {
+		LastError = "";
+		if (frame < 0 || frame >= Textures.size()) {
+			char FE[400];
+			sprintf_s(FE, 395, "Texture assignment out of bouds! (%d/%d)", frame, (int)Textures.size());
+			LastError = FE;
+			return;
+		}
+		SDL_SetTextureColorMod(Textures[frame], tcr, tcg, tcb);
+		SDL_Rect Target;
+		Target.x = x;
+		Target.y = y;
+		Target.w = w;
+		Target.h = h;
+		SDL_RenderCopy(gRenderer, Textures[frame], NULL, &Target);
+	}
+
+	void TQSG_Image::Tile(int x, int y, int w, int h, int frame,int ix, int iy) {
+		// todo: Fix issues with negative ix
+		if (ix < 0) {
+			//cout << "neg x:" << ix << " to ";
+			ix = (x-(Width() + ix))%Width();
+			//cout << ix << "\n";
+		}
+		if (iy < 0) {
+			//cout << "neg x:" << ix << " to ";
+			iy = (y-(Height() + iy))%Height();
+			//cout << ix << "\n";
+		}
+		int ox, oy, ow, oh;
+		TQSG_GetViewPort(&ox, &oy, &ow, &oh);
+		int tsx, tsy, tex, tey, tw, th;
+		int imgh = Height();
+		int imgw = Width();
+		/*
+		tsx = max(ox, x);
+		tsy = max(oy, y);
+		tex = min(ow + ox, x + w); tw = tex - tsx;
+		tey = min(oh + oy, y + h); th = tey - tsy;
+		*/
+		tsx = x;
+		tsy = y;
+		tex = w + x;
+		tey = h + y;
+		tw = w;
+		th = h;
+		if (tw <= 0 || th <= 0) return; // Nothing to do but getting bugged!
+		//cout << "TILE: Rect("<<x<<","<<y<<") "<<w<<"x"<<h<<" "<<"\n";
+		//cout << "\tViewPort(" << tsx << "," << tsy << "," << tw << "[" << tex << "]" << "," << th << "[" << tey << "])\n";
+		SDL_Rect Target, Source;
+		//TQSG_ViewPort(tsx, tsy, tw, th);
+		//TQSG_Rect(tsx, tsy, tw, th);
+		//cout << "for (int dy = tsy("<<tsy<<") - iy("<<iy<<")(" << (tsy - iy) << "); dy < tey(" << tey << "); dy += imgh(" << imgh << ")) \n";
+		for (int dy = tsy - iy; dy < tey; dy += imgh) {
+			//cout << "(" << x << "," << y << ")\tdy:" << dy << "; tsy:" << tsy << " imgh:" << imgh << " th:" << th << "\n";
+			 for (int dx = tsx - ix; dx < tex; dx += imgw) {
+				//cout << "\t\tDrawTile(" << dx << "," << dy << "," << imgw << "," << imgh << ")\n";
+				Target.x = dx;
+				Target.y = dy;
+				Target.w = imgw;
+				Target.h = imgh;
+				Source.x = 0;
+				Source.y = 0;
+				Source.w = imgw;
+				Source.h = imgh;
+				//cout << "tgt (" << Target.x << "," << Target.y << ") " << Target.w << "x" << Target.h<<"\n";
+				//cout << "src (" << Source.x << "," << Source.y << ") " << Source.w << "x" << Source.h<<"; Frame:"<<frame<<"\n\n";
+				//cout << "("<<x<<","<<y<<")\tdx:" << dx << "; tsx:" << tsx << " imgw:" << imgw << " tw:" << tw<<"\n";
+				if (dx >= tsx && (dx + imgw) > tex) {
+					Source.w = imgw - ((dx + imgw) - tex);
+					Target.w = Source.w; //(dx + imgw) - tex;
+					//cout << "aw " << Source.w << "\n";
+				} else if (dx <= tsx) {
+					Source.x = tsx - dx;
+					Source.w = imgw - Source.x;
+					Target.x = tsx;
+					Target.w = Source.w;
+				}
+				if (dy <= tsy && dy + imgh > tey) {
+					Source.y = tsy - dy;
+					Source.h = th;
+					Target.y = tsy;
+					Target.h = th;
+				} else if (dy >= tsy && (dy + imgh) > tey) {
+					Source.h = imgh - ((dy + imgh) - tey);
+					Target.h = Source.h;//(dy + imgh) - tey;
+					//cout << "ah " << Source.h << "\t" << dy << "\tImgHeight:>" << imgh << "; img-maxy::>" << (dy + imgh) << "; rect-maxy::>" << tey << "=="<<(h+y)<<"\n";
+				} else if (dy <= tsy) {
+					Source.y = tsy - dy;
+					Source.h = imgh - Source.y;
+					Target.y = tsy;
+					Target.h = Source.h;
+				}
+
+
+				// TQSG_Rect(dx, dy, imgw, imgh);//debug
+				SDL_RenderCopy(gRenderer, Textures[frame], &Source, &Target);
+			}
+		}
+		//TQSG_ViewPort(ox, oy, ow, oh);
+		//TQSG_Color(180, 0, 255);
+		//TQSG_Rect(tsx, tsy, tw, th,true);
+		
+	}
+
 
 	int TQSG_Image::Width()	{
 		LastError = "";
@@ -269,6 +423,39 @@ namespace TrickyUnits {
 	void TQSG_ScreenSize(int* w, int* h) {
 		SDL_GetRendererOutputSize(gRenderer, w, h);
 	}
+
+	void TQSG_ViewPort(int x, int y,int w,int h) {
+		SDL_Rect R;
+		R.x = x;
+		R.y = y;
+		R.w = w;
+		R.h = h;
+		SDL_RenderSetViewport(gRenderer,&R);
+		//SDL_RenderSetClipRect(gRenderer, &R);
+	}
+
+	void TQSG_ViewPort() {
+		int w, h;
+		SDL_GetRendererOutputSize(gRenderer, &w, &h);
+		TQSG_ViewPort(0, 0, w, h);
+	}
+
+	void TQSG_GetViewPort(int* x, int* y, int* w, int* h) {
+		SDL_Rect R;
+		SDL_RenderGetViewport(gRenderer, &R);
+		//SDL_RenderGetClipRect(gRenderer, &R);
+		*x = R.x;
+		*y = R.y;
+		*w = R.w;
+		*h = R.h;
+	}
+
+	void TQSG_Rotate(double degrees) { rotatedegrees = degrees; }
+	void TQSG_RotateRAD(double radians) { rotatedegrees = radians * (180 / M_PI); }
+	void TQSG_RotateGRAD(double gradians) { rotatedegrees = gradians * 180 / 200; }
+	double TQSG_Rotate() { return rotatedegrees; }
+	double TQSG_RotateRAD() { return rotatedegrees * M_PI / 180; }
+	double TQSG_RotateGRAD() { return rotatedegrees * (200 / 180); }
 
 
 	void TQSG_Flip() {
