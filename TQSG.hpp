@@ -1,7 +1,7 @@
 // Lic:
 // TQSG.hpp
 // TQSG Header
-// version: 20.09.01
+// version: 20.09.05
 // Copyright (C) 2020 Jeroen P. Broks
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
@@ -47,12 +47,15 @@
 
 namespace TrickyUnits {
 
+
 	class TQSG_Image {
 	private:
 		bool Faulty = false; // When this contains 'true' all operations can be refused!
 		std::string FaultyReason = ""; 
 		std::vector<SDL_Texture*> Textures;
 		int hotx=0, hoty=0;
+		bool altframing = false;
+		std::vector<SDL_Rect> AltFrames;
 		void LoadRWops(SDL_RWops* data, int frame=-1, int autofree = 1);
 		void TrueLoadJCR(jcr6::JT_Dir& JCR, std::string entry);
 	public:
@@ -66,6 +69,9 @@ namespace TrickyUnits {
 		void Create(std::string file);
 		void Create(jcr6::JT_Dir& JCR, std::string entry);
 		void Create(std::string mainfile, std::string entry);
+
+		void AltFrame(int w, int h, int num);
+
 		/// <summary>
 		/// Draws an image with the basic settings. Please note, rotation and flipping settings are ignored.
 		/// </summary>

@@ -1,7 +1,7 @@
 // Lic:
 // TQSA.cpp
 // Tricky's Quick SDL Audio
-// version: 20.09.01
+// version: 20.09.05
 // Copyright (C) 2020 Jeroen P. Broks
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
@@ -47,19 +47,19 @@ void TQSA_Audio::Kill() {
 void TQSA_Audio::Load(const char* File) {
 	Kill();
 	ActualChunk = Mix_LoadWAV(File);
-	if (!ActualChunk) std::cout << "Loading from file \"" << File << "\" failed!";
+	if (!ActualChunk) std::cout << "Loading from file \"" << File << "\" failed!\n";
 }
 
 void TQSA_Audio::Load(jcr6::JT_Dir JCRResource, std::string JCREntry) {
 	Kill();
-	if (!JCRResource.EntryExists(JCREntry)) { std::cout << "Loading JCR Entry \"" << JCREntry << "\" not possible as the entry does not exist!"; return; }
+	if (!JCRResource.EntryExists(JCREntry)) { std::cout << "Loading JCR Entry \"" << JCREntry << "\" not possible as the entry does not exist!\n"; return; }
 	SDL_RWops* RWBuf = NULL;
 	jcr6::JT_Entry E = JCRResource.Entry(JCREntry);
 	jcr6::JT_EntryReader buf;
 	JCRResource.B(JCREntry, buf);
 	RWBuf = SDL_RWFromMem(buf.pointme(), buf.getsize());
 	ActualChunk = Mix_LoadWAV_RW(RWBuf, 1);
-	if (!JCRResource.EntryExists(JCREntry)) { std::cout << "Loading JCR Entry \"" << JCREntry << "\" failed!"; return; }
+	if (!JCRResource.EntryExists(JCREntry)) { std::cout << "Loading JCR Entry \"" << JCREntry << "\" failed!\n"; return; }
 }
 
 void TQSA_Audio::Load(std::string JCRMain, std::string JCREntry) {

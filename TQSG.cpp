@@ -1,7 +1,7 @@
 // Lic:
 // TQSG.cpp
 // TQSG Code
-// version: 20.09.02
+// version: 20.09.05
 // Copyright (C) 2020 Jeroen P. Broks
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
@@ -140,6 +140,12 @@ namespace TrickyUnits {
 		if (JCR.EntryExists(entry)) {
 			// Load Entry
 			Textures.push_back(Tex_From_JCR(JCR, entry));
+			if (JCR.EntryExists(StripExt(entry) + ".frames")) {
+				auto frameinst = JCR.String(StripExt(entry) + ".frames");
+				auto params = Split(frameinst, ',');
+				AltFrame(stoi(params[0]), stoi(params[1]), stoi(params[3]));
+				if (stoi(params[2]) != 0) printf("\x7Warning! Parameter 3 contained valued %d. The TQSG engine ignores this value!", stoi(params[2]));
+			}
 		}
 		else if (JCR.DirectoryExists(entry)) {
 			// Bundle
@@ -165,6 +171,37 @@ namespace TrickyUnits {
 		TrueLoadJCR(J, entry);
 	}
 
+	void TQSG_Image::AltFrame(int w, int h, int num) {
+		LastError = "";
+		if (altframing) {
+			LastError = "Image already altframed";
+			return;
+		}
+		if (Textures.size() != 1) {
+			LastError = "Altframing only possible when there is 1 single texture in an image. No more, no less!";
+			return;
+		}
+		int ow = Width();
+		int oh = Height();
+		int collumns = floor(ow / w);
+		int rows = floor(oh / h);
+		if (collumns * rows < num) {
+			char FE[255];
+			sprintf_s(FE, 250, "Only %d frames possible, but %d were requested!", collumns * rows, num);
+			LastError = FE;
+		}
+		AltFrames.clear();
+		for (int frame = 0; frame < num; ++frame) {
+			SDL_Rect framerect;
+			framerect.x = (frame % collumns) * w;
+			framerect.y = floor(frame / collumns) * h;
+			framerect.w = w;
+			framerect.h = h;
+			AltFrames.push_back(framerect);
+		}
+
+	}
+
 	void TQSG_Image::Draw(int x, int y, int frame) {
 		LastError = "";
 		if (frame < 0 || frame >= Textures.size()) {
@@ -174,14 +211,19 @@ namespace TrickyUnits {
 			return;
 		}
 		//printf("DEBUG! B.Color(%3d, %3d, %3d) \n", tcr, tcg, tcb);
-		SDL_SetTextureColorMod(Textures[frame],tcr, tcg, tcb);
 		//printf("DEBUG! A.Color(%3d, %3d, %3d) \n", tcr, tcg, tcb);
 		SDL_Rect Target;
 		Target.x = x - (int)ceil(hotx*scalex);
 		Target.y = y - (int)ceil(hoty*scaley);
 		Target.w = (int)ceil(Width() * scalex);
 		Target.h = (int)ceil(Height() * scaley);
-		SDL_RenderCopy(gRenderer, Textures[frame], NULL, &Target);
+		if (altframing) {
+			SDL_SetTextureColorMod(Textures[0], tcr, tcg, tcb);
+			SDL_RenderCopy(gRenderer, Textures[0], &AltFrames[frame], &Target);
+		} else {
+			SDL_SetTextureColorMod(Textures[frame], tcr, tcg, tcb);
+			SDL_RenderCopy(gRenderer, Textures[frame], NULL, &Target);
+		}
 	}
 
 	void TQSG_Image::XDraw(int x, int y, int frame) {
@@ -193,7 +235,6 @@ namespace TrickyUnits {
 			return;
 		}
 		//printf("DEBUG! B.Color(%3d, %3d, %3d) \n", tcr, tcg, tcb);
-		SDL_SetTextureColorMod(Textures[frame], tcr, tcg, tcb);
 		//printf("DEBUG! A.Color(%3d, %3d, %3d) \n", tcr, tcg, tcb);
 		SDL_Rect Target;
 		Target.x = x -(int)ceil(hotx * scalex);
@@ -204,7 +245,13 @@ namespace TrickyUnits {
 		cpoint.x = hotx;
 		cpoint.y = hoty;
 		//SDL_RenderCopy(gRenderer, Textures[frame], NULL, &Target);
-		SDL_RenderCopyEx(gRenderer, Textures[frame], NULL, &Target, rotatedegrees, &cpoint, imgflip);
+		if (altframing) {
+			SDL_SetTextureColorMod(Textures[0], tcr, tcg, tcb);
+			SDL_RenderCopyEx(gRenderer, Textures[0], &AltFrames[frame], &Target, rotatedegrees, &cpoint, imgflip);
+		} else {
+			SDL_SetTextureColorMod(Textures[frame], tcr, tcg, tcb);
+			SDL_RenderCopyEx(gRenderer, Textures[frame], NULL, &Target, rotatedegrees, &cpoint, imgflip);
+		}
 
 	}
 
@@ -218,16 +265,26 @@ namespace TrickyUnits {
 			LastError = FE;
 			return;
 		}
-		SDL_SetTextureColorMod(Textures[frame], tcr, tcg, tcb);
 		SDL_Rect Target;
 		Target.x = x;
 		Target.y = y;
 		Target.w = w;
 		Target.h = h;
-		SDL_RenderCopy(gRenderer, Textures[frame], NULL, &Target);
+		if (altframing) {
+			SDL_SetTextureColorMod(Textures[0], tcr, tcg, tcb);
+			SDL_RenderCopy(gRenderer, Textures[frame], &AltFrames[frame], &Target);
+		} else {
+			SDL_SetTextureColorMod(Textures[frame], tcr, tcg, tcb);
+			SDL_RenderCopy(gRenderer, Textures[frame], NULL, &Target);
+		}
 	}
 
 	void TQSG_Image::Tile(int x, int y, int w, int h, int frame,int ix, int iy) {
+		LastError = "";
+		if (altframing) {
+			LastError = "Altframing NOT supported for tiling (and is not likely to be supported in the future, either!)";
+			return;
+		}
 		// todo: Fix issues with negative ix
 		if (ix < 0) {
 			//cout << "neg x:" << ix << " to ";
@@ -319,6 +376,13 @@ namespace TrickyUnits {
 	int TQSG_Image::Width()	{
 		LastError = "";
 		if (Textures.size() == 0) { LastError = "No textures!"; return 0; }
+		if (altframing) {
+			if (AltFrames.size() == 0) {
+				LastError = "No alt frame rectangle config!";
+				return 0;
+			}
+			return AltFrames[0].w;
+		}
 		int w, h;
 		SDL_QueryTexture(Textures[0], NULL, NULL, &w, &h);
 		return w;
@@ -327,6 +391,13 @@ namespace TrickyUnits {
 	int TQSG_Image::Height() {
 		LastError = "";
 		if (Textures.size() == 0) { LastError = "No textures!"; return 0; }
+		if (altframing) {
+			if (AltFrames.size() == 0) {
+				LastError = "No alt frame rectangle config!";
+				return 0;
+			}
+			return AltFrames[0].w;
+		}
 		int w, h;
 		SDL_QueryTexture(Textures[0], NULL, NULL, &w, &h);
 		return h;
@@ -560,8 +631,7 @@ namespace TrickyUnits {
 					printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
 					return false;
 				}
-#endif
-
+#endif				
 				return true;
 			}
 		}
