@@ -17,6 +17,7 @@
 // misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
 // EndLic
+
 #include "TQSG.hpp"
 
 // TODO: Bundle support over JCR
@@ -48,6 +49,8 @@ namespace TrickyUnits {
 #endif
 	}
 
+	TQSG_PanicType TQSG_Panic = NULL;
+
 	static string LastError = "";
 
 	//The window we'll be rendering to
@@ -63,6 +66,11 @@ namespace TrickyUnits {
 	static Uint8 tcr = 255, tcg = 255, tcb = 255, tcalpha=255;
 	static double rotatedegrees = 0;
 	static SDL_RendererFlip imgflip = SDL_FLIP_NONE;
+
+	static void _Panic(std::string errormessage) {
+		LastError = errormessage;
+		if (TQSG_Panic) TQSG_Panic(errormessage);
+	}
 
 	string TQSG_GetError() { return LastError; }
 
@@ -82,6 +90,13 @@ namespace TrickyUnits {
 		else {
 			Textures[frame] = buf;
 		}
+	}
+
+	int TQSG_Image::Frames() {
+		if (altframing)
+			return AltFrames.size();
+		else
+			return Textures.size();
 	}
 
 	void TQSG_Image::Create(SDL_RWops* data, int autofree) {
@@ -158,7 +173,8 @@ namespace TrickyUnits {
 		else {
 			char FE[300];
 			sprintf_s(FE, 295, "I could not find any JCR data for image \"%s\"!", entry.c_str());
-			LastError = FE;
+			//LastError = FE;
+			_Panic(FE);
 		}
 	}
 
@@ -174,11 +190,13 @@ namespace TrickyUnits {
 	void TQSG_Image::AltFrame(int w, int h, int num) {
 		LastError = "";
 		if (altframing) {
-			LastError = "Image already altframed";
+			//LastError = "Image already altframed";
+			_Panic("Image already altframed");
 			return;
 		}
 		if (Textures.size() != 1) {
-			LastError = "Altframing only possible when there is 1 single texture in an image. No more, no less!";
+			//LastError = "Altframing only possible when there is 1 single texture in an image. No more, no less!";
+			_Panic("Altframing only possible when there is 1 single texture in an image. No more, no less!");
 			return;
 		}
 		int ow = Width();
@@ -199,15 +217,23 @@ namespace TrickyUnits {
 			framerect.h = h;
 			AltFrames.push_back(framerect);
 		}
-
+		altframing = true;
 	}
 
 	void TQSG_Image::Draw(int x, int y, int frame) {
 		LastError = "";
-		if (frame < 0 || frame >= Textures.size()) {
+		if (altframing) {
+			if (frame < 0 || frame >= AltFrames.size()) {
+				char FE[400];
+				sprintf_s(FE, 395, "DRAW:Texture frame assignment out of bouds! (%d/%d/A)", frame, (int)AltFrames.size());
+				_Panic(FE);
+				return;
+			}
+		} else if (frame < 0 || frame >= Textures.size()) {
 			char FE[400];
-			sprintf_s(FE, 395, "DRAW:Texture frame assignment out of bouds! (%d/%d)", frame, (int)Textures.size());
-			LastError = FE;
+			sprintf_s(FE, 395, "DRAW:Texture frame assignment out of bouds! (%d/%d/R)", frame, (int)Textures.size());
+			//LastError = FE;
+			_Panic(FE);
 			return;
 		}
 		//printf("DEBUG! B.Color(%3d, %3d, %3d) \n", tcr, tcg, tcb);
@@ -231,7 +257,8 @@ namespace TrickyUnits {
 		if (frame < 0 || frame >= Textures.size()) {
 			char FE[400];
 			sprintf_s(FE, 395, "XDRAW:Texture frame assignment out of bouds! (%d/%d)", frame, (int)Textures.size());
-			LastError = FE;
+			//LastError = FE;
+			_Panic(FE);
 			return;
 		}
 		//printf("DEBUG! B.Color(%3d, %3d, %3d) \n", tcr, tcg, tcb);
@@ -363,6 +390,9 @@ namespace TrickyUnits {
 
 
 				// TQSG_Rect(dx, dy, imgw, imgh);//debug
+				if (frame < 0 || frame >= Textures.size()) {
+					_Panic("<IMAGE>.Tile(" + to_string(x) + "," + to_string(y) + "," + to_string(w) + "," + to_string(h) + "," + to_string(frame) + "): Out of frame boundaries (framecount: " + to_string(Textures.size()) + ")"); return;
+				}
 				SDL_RenderCopy(gRenderer, Textures[frame], &Source, &Target);
 			}
 		}

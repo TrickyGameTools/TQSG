@@ -34,6 +34,8 @@
 
 namespace TrickyUnits {    
 
+    static const int maxmousebuttons = 16;
+
     static bool TQSE_InitDone = false;
 
     static bool stAppTerminate = false;
@@ -42,6 +44,10 @@ namespace TrickyUnits {
     static std::map<int, bool> stKeyHit;
     static std::map<int, bool> stKeyOldDown;
     static std::vector<int> stAllKeys;
+
+    static bool MsButDown[maxmousebuttons];
+    static bool MsButOldDown[maxmousebuttons];
+    static bool MsButHit[maxmousebuttons];
 
     static void InitCheck() {
         if (!TQSE_InitDone) {
@@ -53,13 +59,23 @@ namespace TrickyUnits {
 
     static void KeyClean(bool full = false) {
         for (auto& i : stAllKeys) {
-            if (full) stKeyOldDown[i] = false; else stKeyOldDown[i] = stKeyDown[i];
-            stKeyDown[i] = false;
+            if (full) {
+                stKeyDown[i] = false;
+                stKeyOldDown[i] = false;
+            } else stKeyOldDown[i] = stKeyDown[i];
             stKeyHit[i] = false;
 #ifdef TQSE_Key_Init_Verslag
             if (full) std::cout << "Initiated Keycode #" << i << " (" << SDL_GetKeyName(i) << ")  Count:" << stKeyDown.size() << "\n";
 #endif
 
+        }
+    }
+
+    static void MouseClean(bool full=false) {
+        for (unsigned int i = 0; i < maxmousebuttons; i++) {
+            if (full) MsButOldDown[i] = false; else MsButOldDown[i] = MsButDown[i];
+            MsButDown[i] = false;
+            MsButHit[i] = false;
         }
     }
 
@@ -324,13 +340,15 @@ namespace TrickyUnits {
         stAllKeys.push_back(SDLK_AUDIOFASTFORWARD); // That is SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_AUDIOFASTFORWARD)
         // End        
         KeyClean(true);
+        MouseClean(true);
         // And if you thought I typed all that stuff above, you're NUTS!
         TQSE_InitDone = true;
     }
 
-    void TQSE_Poll() {
+    void TQSE_Poll(EventFunction EventCallBack) {
         InitCheck();
         KeyClean();
+        MouseClean();
         stAppTerminate = false;
         SDL_Event e;
         while (SDL_PollEvent(&e) != 0) {
@@ -339,17 +357,31 @@ namespace TrickyUnits {
                 auto pkey = e.key.keysym.sym;
                 stKeyDown[pkey] = true;
                 stKeyHit[pkey] = stKeyDown[pkey] && (!stKeyOldDown[pkey]);
-            }
+                //printf("DOWN: %d\n",pkey);
                 break;
+            }
             case SDL_KEYUP: {
                 auto pkey = e.key.keysym.sym;
+                //printf("UP:   %d\n", pkey);
                 stKeyDown[pkey] = false;
-            }
                 break;
+            }
+            case SDL_MOUSEBUTTONDOWN: {
+                auto pbut = e.button.button;
+                MsButDown[pbut] = true;
+                MsButHit[pbut] = MsButDown[pbut] && (!MsButOldDown[pbut]);
+                break;
+            }
+            case SDL_MOUSEBUTTONUP: {
+                auto pbut = e.button.button;
+                MsButDown[pbut] = false;
+                break;
+            }
             case SDL_QUIT:
                 stAppTerminate = true;
                 break;
             }
+            if (EventCallBack) EventCallBack(&e);
         }
     }
 
@@ -363,6 +395,46 @@ namespace TrickyUnits {
 
     bool TQSE_KeyDown(SDL_KeyCode c) {
         return stKeyDown[c];
+    }
+
+    int TQSE_MouseX() {
+        int x, y;
+        SDL_GetMouseState(&x, &y);
+        return x;
+    }
+
+    int TQSE_MouseY() {
+        int x, y;
+        SDL_GetMouseState(&x, &y);
+        return y;
+    }
+
+    void HideMouse() {
+        SDL_ShowCursor(SDL_DISABLE);
+    }
+
+    void ShowMouse() {
+        SDL_ShowCursor(SDL_ENABLE);
+    }
+
+    bool TQSE_MouseDown(int code) {
+        if (code < 0 || code >= maxmousebuttons) return false;
+        return MsButDown[code];        
+    }
+
+    bool TQSE_MouseHit(int code) {
+        if (code < 0 || code >= maxmousebuttons) return false;
+        return MsButHit[code];
+    }
+
+    int TQSE_KeyByName(std::string name) {
+        return SDL_GetKeyFromName(name.c_str());        
+    }
+
+    void TQSE_ShowKeyNames() {
+        for (auto kc : stAllKeys) {
+            printf("%10s = %9d\n", SDL_GetKeyName(kc), kc);
+        }
     }
 
 }

@@ -47,6 +47,9 @@
 
 namespace TrickyUnits {
 
+	typedef void (*TQSG_PanicType)(std::string errormessage);
+
+	extern TQSG_PanicType TQSG_Panic;
 
 	class TQSG_Image {
 	private:
@@ -64,6 +67,8 @@ namespace TrickyUnits {
 		/// </summary>
 		bool AutoClean = false;
 		
+		int Frames();
+
 		void Create(SDL_RWops* data, int autofree = 1);
 		void Create(SDL_Texture* data);
 		void Create(std::string file);
