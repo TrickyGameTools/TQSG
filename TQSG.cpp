@@ -66,6 +66,7 @@ namespace TrickyUnits {
 	static Uint8 tcr = 255, tcg = 255, tcb = 255, tcalpha=255;
 	static double rotatedegrees = 0;
 	static SDL_RendererFlip imgflip = SDL_FLIP_NONE;
+	static SDL_BlendMode BlendMode = SDL_BLENDMODE_BLEND;
 
 	static void _Panic(std::string errormessage) {
 		LastError = errormessage;
@@ -244,9 +245,13 @@ namespace TrickyUnits {
 		Target.w = (int)ceil(Width() * scalex);
 		Target.h = (int)ceil(Height() * scaley);
 		if (altframing) {
+			SDL_SetTextureBlendMode(Textures[0], BlendMode);
+			SDL_SetTextureAlphaMod(Textures[0], tcalpha);
 			SDL_SetTextureColorMod(Textures[0], tcr, tcg, tcb);
 			SDL_RenderCopy(gRenderer, Textures[0], &AltFrames[frame], &Target);
 		} else {
+			SDL_SetTextureBlendMode(Textures[frame], BlendMode);
+			SDL_SetTextureAlphaMod(Textures[frame], tcalpha);
 			SDL_SetTextureColorMod(Textures[frame], tcr, tcg, tcb);
 			SDL_RenderCopy(gRenderer, Textures[frame], NULL, &Target);
 		}
@@ -273,9 +278,13 @@ namespace TrickyUnits {
 		cpoint.y = hoty;
 		//SDL_RenderCopy(gRenderer, Textures[frame], NULL, &Target);
 		if (altframing) {
+			SDL_SetTextureBlendMode(Textures[0], BlendMode);
+			SDL_SetTextureAlphaMod(Textures[0], tcalpha);
 			SDL_SetTextureColorMod(Textures[0], tcr, tcg, tcb);
 			SDL_RenderCopyEx(gRenderer, Textures[0], &AltFrames[frame], &Target, rotatedegrees, &cpoint, imgflip);
 		} else {
+			SDL_SetTextureBlendMode(Textures[frame], BlendMode);
+			SDL_SetTextureAlphaMod(Textures[frame], tcalpha);
 			SDL_SetTextureColorMod(Textures[frame], tcr, tcg, tcb);
 			SDL_RenderCopyEx(gRenderer, Textures[frame], NULL, &Target, rotatedegrees, &cpoint, imgflip);
 		}
@@ -298,9 +307,13 @@ namespace TrickyUnits {
 		Target.w = w;
 		Target.h = h;
 		if (altframing) {
+			SDL_SetTextureBlendMode(Textures[0], BlendMode);
+			SDL_SetTextureAlphaMod(Textures[0], tcalpha);
 			SDL_SetTextureColorMod(Textures[0], tcr, tcg, tcb);
 			SDL_RenderCopy(gRenderer, Textures[frame], &AltFrames[frame], &Target);
 		} else {
+			SDL_SetTextureBlendMode(Textures[frame], BlendMode);
+			SDL_SetTextureAlphaMod(Textures[frame], tcalpha);
 			SDL_SetTextureColorMod(Textures[frame], tcr, tcg, tcb);
 			SDL_RenderCopy(gRenderer, Textures[frame], NULL, &Target);
 		}
@@ -347,6 +360,8 @@ namespace TrickyUnits {
 		//TQSG_ViewPort(tsx, tsy, tw, th);
 		//TQSG_Rect(tsx, tsy, tw, th);
 		//cout << "for (int dy = tsy("<<tsy<<") - iy("<<iy<<")(" << (tsy - iy) << "); dy < tey(" << tey << "); dy += imgh(" << imgh << ")) \n";
+		SDL_SetTextureBlendMode(Textures[frame], BlendMode);
+		SDL_SetTextureAlphaMod(Textures[frame], tcalpha);
 		for (int dy = tsy - iy; dy < tey; dy += imgh) {
 			//cout << "(" << x << "," << y << ")\tdy:" << dy << "; tsy:" << tsy << " imgh:" << imgh << " th:" << th << "\n";
 			 for (int dx = tsx - ix; dx < tex; dx += imgw) {
@@ -392,7 +407,7 @@ namespace TrickyUnits {
 				// TQSG_Rect(dx, dy, imgw, imgh);//debug
 				if (frame < 0 || frame >= Textures.size()) {
 					_Panic("<IMAGE>.Tile(" + to_string(x) + "," + to_string(y) + "," + to_string(w) + "," + to_string(h) + "," + to_string(frame) + "): Out of frame boundaries (framecount: " + to_string(Textures.size()) + ")"); return;
-				}
+				}				
 				SDL_RenderCopy(gRenderer, Textures[frame], &Source, &Target);
 			}
 		}
@@ -485,6 +500,9 @@ namespace TrickyUnits {
 		SDL_RenderClear(gRenderer);
 		SDL_SetRenderDrawColor(gRenderer, r,g,b,a);		
 	}
+
+	void TQSG_SetBlend(SDL_BlendMode BM) { BlendMode = BM; }
+	void TQSG_SetBlend(TQSG_Blend BM) { BlendMode = (SDL_BlendMode)BM; }	
 
 	void TQSG_Plot(int x, int y) {
 		SDL_SetRenderDrawColor(gRenderer, tcr, tcg, tcb,tcalpha);

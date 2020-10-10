@@ -51,6 +51,14 @@ namespace TrickyUnits {
 
 	extern TQSG_PanicType TQSG_Panic;
 
+	enum class TQSG_Blend {
+		NONE = SDL_BLENDMODE_NONE,
+		ALPHA = SDL_BLENDMODE_BLEND,
+		ADDITIVE = SDL_BLENDMODE_ADD,
+		COLOR = SDL_BLENDMODE_MOD
+	};
+
+
 	class TQSG_Image {
 	private:
 		bool Faulty = false; // When this contains 'true' all operations can be refused!
@@ -192,6 +200,8 @@ namespace TrickyUnits {
 	void TQSG_Line(int x1, int y1, int x2, int y2);
 	void TQSG_ClsColor(int r, int g, int b);
 	void TQSG_Cls();
+	void TQSG_SetBlend(SDL_BlendMode BM);
+	void TQSG_SetBlend(TQSG_Blend BM);
 
 	void TQSG_Plot(int x, int y);
 
