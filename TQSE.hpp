@@ -51,6 +51,7 @@ namespace TrickyUnits {
 	int TQSE_KeyByName(std::string name);
 	void TQSE_ShowKeyNames();
 	
+	bool TQSE_Yes(std::string question);
 
 
 }
