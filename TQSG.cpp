@@ -49,6 +49,7 @@ namespace TrickyUnits {
 #endif
 	}
 
+	string TError{ "No Error" };
 	TQSG_PanicType TQSG_Panic = NULL;
 
 	static string LastError = "";
@@ -360,6 +361,7 @@ namespace TrickyUnits {
 		//TQSG_ViewPort(tsx, tsy, tw, th);
 		//TQSG_Rect(tsx, tsy, tw, th);
 		//cout << "for (int dy = tsy("<<tsy<<") - iy("<<iy<<")(" << (tsy - iy) << "); dy < tey(" << tey << "); dy += imgh(" << imgh << ")) \n";
+		SDL_SetTextureColorMod(Textures[frame],tcr, tcg, tcb);
 		SDL_SetTextureBlendMode(Textures[frame], BlendMode);
 		SDL_SetTextureAlphaMod(Textures[frame], tcalpha);
 		for (int dy = tsy - iy; dy < tey; dy += imgh) {
@@ -473,6 +475,7 @@ namespace TrickyUnits {
 	TQSG_Image::~TQSG_Image() {
 		if (AutoClean) KillAll();
 	}
+
 
 	void SetScale(double x, double y) {
 		scalex = x;
@@ -591,6 +594,7 @@ namespace TrickyUnits {
 		r.y = y;
 		r.w = w;
 		r.h = h;		
+		SDL_SetRenderDrawBlendMode(gRenderer,BlendMode);
 		SDL_SetRenderDrawColor(gRenderer, tcr, tcg, tcb, tcalpha);
 		if (open)
 			SDL_RenderDrawRect(gRenderer, &r);
@@ -638,7 +642,7 @@ namespace TrickyUnits {
 				if (fullscreen) {
 					int fcsuc = SDL_SetWindowFullscreen(gWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
 					if (fcsuc != 0) {
-						printf("\a\x1b[33mWARNING!\x1b[0m\t Going into full screen was unsuccesful");
+						printf("\a\x1b[33mWARNING!\x1b[0m\t Going into full screen was unsuccesful\n\n");
 					}
 				}
 				gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED);
@@ -659,6 +663,7 @@ namespace TrickyUnits {
 					if (!(IMG_Init(imgFlags) & imgFlags))
 					{
 						printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
+						LastError="SDL_Image: " + string(IMG_GetError());
 						SDL_DestroyWindow(gWindow);
 						SDL_DestroyRenderer(gRenderer);
 						return false;
