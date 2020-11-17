@@ -33,6 +33,8 @@
 
 #undef TQSG_AllowTTF
 
+#define TQSG_ACol(R,G,B,A) { TQSG_Color(R,G,B); TQSG_Alpha(A); }
+
 // SDL
 #include <SDL.h>
 #include <SDL_image.h>
@@ -127,6 +129,9 @@ namespace TrickyUnits {
 		void HotCenter();
 		void HotBottomCenter();
 		~TQSG_Image();
+		
+		
+		
 	};
 
 #ifdef TQSG_AllowTTF
