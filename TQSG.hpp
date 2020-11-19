@@ -33,7 +33,7 @@
 
 #undef TQSG_AllowTTF
 
-#define TQSG_ACol(R,G,B,A) { TQSG_Color(R,G,B); TQSG_Alpha(A); }
+#define TQSG_ACol(R,G,B,A) { TQSG_Color(R,G,B); TQSG_SetAlpha(A); }
 
 // SDL
 #include <SDL.h>
