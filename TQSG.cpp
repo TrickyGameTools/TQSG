@@ -1060,7 +1060,7 @@ namespace TrickyUnits {
 	}
 
 	TQSG_ImageFont::~TQSG_ImageFont() {
-		printf("Image font destruction call\n");
+		printf("Image font destruction call (%x) \n",(int)this);
 		Kill();
 	}
 
