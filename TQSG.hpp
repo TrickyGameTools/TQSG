@@ -1,7 +1,7 @@
 // Lic:
 // TQSG.hpp
 // TQSG Header
-// version: 20.09.05
+// version: 20.11.30
 // Copyright (C) 2020 Jeroen P. Broks
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
@@ -223,7 +223,9 @@ namespace TrickyUnits {
 	double TQSG_RotateRAD();
 	double TQSG_RotateGRAD();
 
-
+	int TQSG_DesktopWidth();
+	int TQSG_DesktopHeight();
+	void TQSG_DesktopSize(int& w, int& h);
 
 	bool TQSG_Init(std::string WindowTitle, int WinWidth = 800, int WinHeight = 600,bool fullscreen=false);
 	void TQSG_Close();

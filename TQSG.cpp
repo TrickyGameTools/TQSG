@@ -1,7 +1,7 @@
 // Lic:
 // TQSG.cpp
 // TQSG Code
-// version: 20.09.05
+// version: 20.11.30
 // Copyright (C) 2020 Jeroen P. Broks
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
@@ -523,6 +523,26 @@ namespace TrickyUnits {
 		return h;
 	}
 
+	int TQSG_DesktopWidth() {
+		SDL_DisplayMode mode;
+		SDL_GetDesktopDisplayMode(0, &mode);
+		return mode.w;
+	}
+
+	int TQSG_DesktopHeight() {
+		SDL_DisplayMode mode;
+		SDL_GetDesktopDisplayMode(0, &mode);
+		return mode.h;
+	}
+
+	void TQSG_DesktopSize(int &w,int &h){
+		SDL_DisplayMode mode;
+		SDL_GetDesktopDisplayMode(0, &mode);
+		w = mode.h;
+		h = mode.h;
+	}
+
+
 	void TQSG_ScreenSize(int* w, int* h) {
 		SDL_GetRendererOutputSize(gRenderer, w, h);
 	}
@@ -604,6 +624,7 @@ namespace TrickyUnits {
 
 	void TQSG_Circle(int x, int y, int radius) {
 		SDL_SetRenderDrawColor(gRenderer, tcr, tcg, tcb, tcalpha);
+		//cout << "Circle: " << radius << "\n"; // debug
 		float lastx = x, lasty = (radius)+y;
 		for (double i = 0; i < 2 * 3.14; i += 0.025) {
 			//SDL_RenderDrawPoint(gRenderer, floor(sin(i) * radius) + x, floor(cos(i) * radius) + y);			
@@ -928,7 +949,7 @@ namespace TrickyUnits {
 				pos += 2; // No need to check more out! 
 			else if (txt[pos] == '\n')
 				lines++;
-			pos++;
+			pos++;			
 		}
 		//printf("<TextHeight height='%d' lines='%d' return='%d' >\n%s\n</TextHeight>\n",height,lines,height*lines,txt); // debug
 		return height*lines;
