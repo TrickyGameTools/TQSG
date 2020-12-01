@@ -41,6 +41,12 @@ namespace TrickyUnits {
 
 	bool TQSE_KeyHit(SDL_KeyCode c);
 	bool TQSE_KeyDown(SDL_KeyCode c);
+	
+	// Bit of a dirty way to get the pressed key and far from fully accrate, but it can sometimes be a better run.
+	SDL_KeyCode TQSE_GetKey(); 
+
+	// Will try to get a typable character the last event. Not fully accurate, but for typing names and such it can do the job.
+	unsigned char TQSE_GetChar();
 
 	int TQSE_MouseX();
 	int TQSE_MouseY();
