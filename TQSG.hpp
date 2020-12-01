@@ -193,7 +193,7 @@ namespace TrickyUnits {
 	std::string TQSG_GetError();
 	void SetScale(double x=1, double y=1);
 	void GetScale(double& x, double& y);
-	void TQSG_Flip();
+	void TQSG_Flip(int minticks=-1);
 
 	void TQSG_Color(Uint8 r, Uint8 g, Uint8 b);
 	void TQSG_GetColor(Uint8* r, Uint8* g, Uint8* b);

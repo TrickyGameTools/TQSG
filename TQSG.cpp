@@ -538,7 +538,7 @@ namespace TrickyUnits {
 	void TQSG_DesktopSize(int &w,int &h){
 		SDL_DisplayMode mode;
 		SDL_GetDesktopDisplayMode(0, &mode);
-		w = mode.h;
+		w = mode.w;
 		h = mode.h;
 	}
 
@@ -581,8 +581,13 @@ namespace TrickyUnits {
 	double TQSG_RotateGRAD() { return rotatedegrees * (200 / 180); }
 
 
-	void TQSG_Flip() {
+	void TQSG_Flip(int minticks) {
 		//SDL_UpdateWindowSurface(gWindow);
+		static auto oud{ SDL_GetTicks() };		
+		static auto mt{ 0 };
+		if (minticks >= 0) mt = minticks;
+		while (minticks && SDL_GetTicks() - oud < mt) SDL_Delay(1);
+		oud = SDL_GetTicks();		
 		SDL_RenderPresent(gRenderer);
 	}
 
