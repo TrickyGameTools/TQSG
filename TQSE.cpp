@@ -49,6 +49,9 @@ namespace TrickyUnits {
     static bool MsButOldDown[maxmousebuttons];
     static bool MsButHit[maxmousebuttons];
 
+    static bool MsMousePressed[maxmousebuttons];
+    static bool MsMouseReleased[maxmousebuttons];
+
     static void InitCheck() {
         if (!TQSE_InitDone) {
             std::cout << "\a\x1b[31mTQSE check done without calling TQSE first!\x1b[0m\n";
@@ -76,6 +79,8 @@ namespace TrickyUnits {
             if (full) MsButOldDown[i] = false; else MsButOldDown[i] = MsButDown[i];
             MsButDown[i] = false;
             MsButHit[i] = false;
+            MsMousePressed[i] = false;
+            MsMouseReleased[i] = false;
         }
     }
 
@@ -375,6 +380,7 @@ namespace TrickyUnits {
             case SDL_MOUSEBUTTONUP: {
                 auto pbut = e.button.button;
                 MsButDown[pbut] = false;
+                MsMouseReleased[pbut] = true;
                 break;
             }
             case SDL_QUIT:
@@ -391,6 +397,9 @@ namespace TrickyUnits {
 
     bool TQSE_KeyHit(SDL_KeyCode c) {
         return stKeyHit[c];
+    }
+    bool TQSE_MouseReleased(int c) {
+        return MsMouseReleased[(SDL_KeyCode)c];
     }
 
     bool TQSE_KeyDown(SDL_KeyCode c) {

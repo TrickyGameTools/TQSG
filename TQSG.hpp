@@ -46,6 +46,7 @@
 // C++
 #include <vector>
 #include <string>
+#include <memory>
 
 namespace TrickyUnits {
 
@@ -64,19 +65,19 @@ namespace TrickyUnits {
 	class TQSG_Image {
 	private:
 		bool Faulty = false; // When this contains 'true' all operations can be refused!
-		std::string FaultyReason = ""; 
+		std::string FaultyReason = "";
 		std::vector<SDL_Texture*> Textures;
-		int hotx=0, hoty=0;
+		int hotx = 0, hoty = 0;
 		bool altframing = false;
 		std::vector<SDL_Rect> AltFrames;
-		void LoadRWops(SDL_RWops* data, int frame=-1, int autofree = 1);
+		void LoadRWops(SDL_RWops* data, int frame = -1, int autofree = 1);
 		void TrueLoadJCR(jcr6::JT_Dir& JCR, std::string entry);
 	public:
 		/// <summary>
 		/// When set to 'true', the destructor will automatically dispose the texture data inside.
 		/// </summary>
 		bool AutoClean = false;
-		
+
 		int Frames();
 
 		void Create(SDL_RWops* data, int autofree = 1);
@@ -114,7 +115,7 @@ namespace TrickyUnits {
 		/// <param name="frame"></param>
 		/// <param name="ix"></param>
 		/// <param name="iy"></param>
-		void Tile(int x, int y, int w, int h, int frame = 0,int ix=0,int iy=0);
+		void Tile(int x, int y, int w, int h, int frame = 0, int ix = 0, int iy = 0);
 
 
 		/// <returns>Width of image</returns>
@@ -129,9 +130,9 @@ namespace TrickyUnits {
 		void HotCenter();
 		void HotBottomCenter();
 		~TQSG_Image();
-		
-		
-		
+
+
+
 	};
 
 #ifdef TQSG_AllowTTF
@@ -143,11 +144,11 @@ namespace TrickyUnits {
 		void Kill();
 		TQSG_Image Text(const char* txt);
 		TQSG_Image Text(std::string txt);
-		void Draw(const char* txt, int x, int y, unsigned char ha=0, unsigned char va=0);
-		void Draw(std::string txt, int x, int y, unsigned char ha=0, unsigned char va=0);
-		void LoadFont(SDL_RWops* buf, int size=24,int autofree = 1);
-		void LoadFont(std::string file, int fontsize=24);
-		void LoadFont(jcr6::JT_Dir& JCRRes,std::string Entry, int fontsize = 24);
+		void Draw(const char* txt, int x, int y, unsigned char ha = 0, unsigned char va = 0);
+		void Draw(std::string txt, int x, int y, unsigned char ha = 0, unsigned char va = 0);
+		void LoadFont(SDL_RWops* buf, int size = 24, int autofree = 1);
+		void LoadFont(std::string file, int fontsize = 24);
+		void LoadFont(jcr6::JT_Dir& JCRRes, std::string Entry, int fontsize = 24);
 		void LoadFont(std::string JCRFile, std::string Entry, int fontsize = 24);
 		~TQSG_TTF();
 	};
@@ -175,32 +176,32 @@ namespace TrickyUnits {
 		//TQSG_Image Text(const char* txt);
 		//TQSG_Image Text(std::string txt);
 		int TextWidth(const char* txt);
-		int TextHeight(const char*txt);
+		int TextHeight(const char* txt);
 
-		void DrawLetter(Uint8 base, Uint8 ch,int x, int y);
+		void DrawLetter(Uint8 base, Uint8 ch, int x, int y);
 
-		void Draw(const char* txt, int x, int y, unsigned char ha = 0, unsigned char va = 0,int autonext=0);
-		void Draw(std::string txt, int x, int y, unsigned char ha = 0, unsigned char va = 0,int autonext=0);
+		void Draw(const char* txt, int x, int y, unsigned char ha = 0, unsigned char va = 0, int autonext = 0);
+		void Draw(std::string txt, int x, int y, unsigned char ha = 0, unsigned char va = 0, int autonext = 0);
 		int LastAutoNextCount = 1;
 		//void LoadFont(SDL_RWops* buf, int size = 24, int autofree = 1);
-		void LoadFont(jcr6::JT_Dir& JCRRes, std::string Bundle, bool all=false);
-		void LoadFont(std::string JCRFile, std::string Bundle, bool all=false);
-		void LoadFont(std::string file, bool all=false);
+		void LoadFont(jcr6::JT_Dir& JCRRes, std::string Bundle, bool all = false);
+		void LoadFont(std::string JCRFile, std::string Bundle, bool all = false);
+		void LoadFont(std::string file, bool all = false);
 		~TQSG_ImageFont();
 		TQSG_ImageFont();
 	};
 
 	std::string TQSG_GetError();
-	void SetScale(double x=1, double y=1);
+	void SetScale(double x = 1, double y = 1);
 	void GetScale(double& x, double& y);
-	void TQSG_Flip(int minticks=-1);
+	void TQSG_Flip(int minticks = -1);
 
 	void TQSG_Color(Uint8 r, Uint8 g, Uint8 b);
 	void TQSG_GetColor(Uint8* r, Uint8* g, Uint8* b);
 	void TQSG_SetAlpha(Uint8 a);
 	Uint8 TQSG_GetAlpha();
 
-	void TQSG_Rect(int x, int y, int w, int h,bool open=false);
+	void TQSG_Rect(int x, int y, int w, int h, bool open = false);
 	void TQSG_Circle(int x, int y, int radius);
 	void TQSG_Line(int x1, int y1, int x2, int y2);
 	void TQSG_ClsColor(int r, int g, int b);
@@ -227,7 +228,28 @@ namespace TrickyUnits {
 	int TQSG_DesktopHeight();
 	void TQSG_DesktopSize(int& w, int& h);
 
-	bool TQSG_Init(std::string WindowTitle, int WinWidth = 800, int WinHeight = 600,bool fullscreen=false);
+	bool TQSG_Init(std::string WindowTitle, int WinWidth = 800, int WinHeight = 600, bool fullscreen = false);
 	void TQSG_Close();
-	
+
+
+
+	// Don't EVER use this directly, but always use with a shared pointer in stead. Safer that way!
+	class TQSG_PureAutoImage {
+	private:
+		TQSG_Image _img;
+	public:
+		TQSG_Image* Img(); // Only there to quickly try things out, but beware for deprecation over time, as I don't like this pointer to be here!
+		~TQSG_PureAutoImage();
+		void HotCenter();
+		void Draw(int x, int y, int frame = 0);
+		void HotBottomRight();
+	};
+
+	typedef std::shared_ptr<TQSG_PureAutoImage> TQSG_AutoImage;
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(std::string file);
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(std::string jcrfile,std::string file);
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(jcr6::JT_Dir jcrdir, std::string file);
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(int size, const char* buf);
+
+	// TQSG_AutoImage Test;
 }

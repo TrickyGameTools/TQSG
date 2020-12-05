@@ -26,6 +26,7 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
+#include <memory>
 
 // Myself
 #include <TQSG.hpp>
@@ -1093,5 +1094,47 @@ namespace TrickyUnits {
 	TQSG_ImageFont::TQSG_ImageFont() {
 	}
 
+
+
+	TQSG_Image* TQSG_PureAutoImage::Img() {
+		return &_img;
+	}
+
+	TQSG_PureAutoImage::~TQSG_PureAutoImage() {
+		_img.KillAll();
+	}
+
+	void TQSG_PureAutoImage::HotCenter() {
+		_img.HotCenter();
+	}
+
+	void TQSG_PureAutoImage::Draw(int x, int y, int frame) { _img.Draw(x, y, frame); }
+
+	void TQSG_PureAutoImage::HotBottomRight() { _img.Hot(_img.Width(), _img.Height()); }
+
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(std::string file) {
+		auto ret{ std::make_shared<TQSG_PureAutoImage>() };
+		ret->Img()->Create(file);
+		return ret;
+	}
+
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(std::string jcrfile, std::string file) {
+		auto ret{ std::make_shared<TQSG_PureAutoImage>() };
+		ret->Img()->Create(jcrfile,file);
+		return ret;
+	}
+
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(jcr6::JT_Dir jcrdir, std::string file) {
+		auto ret{ std::make_shared<TQSG_PureAutoImage>() };
+		ret->Img()->Create(jcrdir, file);
+		return ret;
+	}
+
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(int size, const char* buf) {
+		auto ret{ std::make_shared<TQSG_PureAutoImage>() };
+		SDL_RWops* RWBuf{ NULL };
+		RWBuf = SDL_RWFromMem((void*)buf, size);
+		ret->Img()->Create(RWBuf);
+	}
 
 }
