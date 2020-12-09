@@ -37,6 +37,7 @@
 
 // SDL
 #include <SDL.h>
+#include <SDL_main.h>
 #include <SDL_image.h>
 // #include <SDL_ttf.h>
 
@@ -129,6 +130,7 @@ namespace TrickyUnits {
 		void Hot(int x, int y);
 		void HotCenter();
 		void HotBottomCenter();
+		void HotGet(int& x, int& y);
 		~TQSG_Image();
 
 
@@ -197,6 +199,7 @@ namespace TrickyUnits {
 	void TQSG_Flip(int minticks = -1);
 
 	void TQSG_Color(Uint8 r, Uint8 g, Uint8 b);
+	void TQSG_ColorHSV(double Hue, double Saturation, double Value);
 	void TQSG_GetColor(Uint8* r, Uint8* g, Uint8* b);
 	void TQSG_SetAlpha(Uint8 a);
 	Uint8 TQSG_GetAlpha();
@@ -214,6 +217,7 @@ namespace TrickyUnits {
 	int TQSG_ScreenWidth();
 	int TQSG_ScreenHeight();
 	void TQSG_ScreenSize(int* x, int* y);
+	// Note this is yet only in config there is no actual effect yet, but there wull be in the future
 	void TQSG_ViewPort(int x, int y, int w, int h);
 	void TQSG_ViewPort();
 	void TQSG_GetViewPort(int* x, int* y, int* w, int* h);
@@ -228,9 +232,13 @@ namespace TrickyUnits {
 	int TQSG_DesktopHeight();
 	void TQSG_DesktopSize(int& w, int& h);
 
+	void TQSG_SetOrigin(int x, int y);
+	void TQSG_GetOrigin(int& x, int& y);
+
 	bool TQSG_Init(std::string WindowTitle, int WinWidth = 800, int WinHeight = 600, bool fullscreen = false);
 	void TQSG_Close();
 
+	
 
 
 	// Don't EVER use this directly, but always use with a shared pointer in stead. Safer that way!
@@ -240,9 +248,16 @@ namespace TrickyUnits {
 	public:
 		TQSG_Image* Img(); // Only there to quickly try things out, but beware for deprecation over time, as I don't like this pointer to be here!
 		~TQSG_PureAutoImage();
-		void HotCenter();
 		void Draw(int x, int y, int frame = 0);
+		void Tile(int x, int y, int w, int h, int frame = 0);
+		void Tile(int x, int y, int w, int h, int ix, int iy, int frame=0);
+		void Stretch(int x, int y, int w, int h, int frame = 0);
 		void HotBottomRight();
+		int W();
+		int H();
+		void Hot(int x, int y);
+		void HotCenter();
+		void HotGet(int& x, int& y);		
 	};
 
 	typedef std::shared_ptr<TQSG_PureAutoImage> TQSG_AutoImage;
@@ -250,6 +265,24 @@ namespace TrickyUnits {
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(std::string jcrfile,std::string file);
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(jcr6::JT_Dir jcrdir, std::string file);
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(int size, const char* buf);
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_GrabScreen();
 
-	// TQSG_AutoImage Test;
+	// Don't EVER use this directly but always use a shared pointer in stead. Safer that way.
+	class TQSG_PureAutoImageFont {
+	private:
+		TQSG_ImageFont _fnt;
+	public:
+		TQSG_ImageFont* Font(); // Only meant to try things out, but beware of deprecation over time, and I don't like this pointer ot be here!
+		void Draw(std::string txt, int x, int y, unsigned char ha = 0, unsigned char va = 0);
+		int W(std::string txt);
+		int H(std::string txt);
+		//TQSG_PureAutoImageFont(jcr6::JT_Dir* D, const char* File);
+		~TQSG_PureAutoImageFont();
+	};
+	typedef std::shared_ptr<TQSG_PureAutoImageFont> TQSG_AutoImageFont;
+
+	TQSG_AutoImageFont TQSG_LoadAutoImageFont(std::string jcrfile, std::string Dir);
+	TQSG_AutoImageFont TQSG_LoadAutoImageFont(jcr6::JT_Dir* jcrdir, std::string File);
+
+	
 }

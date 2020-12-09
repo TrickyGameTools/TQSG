@@ -29,7 +29,7 @@
 #include <memory>
 
 // Myself
-#include <TQSG.hpp>
+#include "TQSG.hpp"
 
 // Tricky's Units
 #include <QuickStream.hpp>
@@ -43,6 +43,123 @@
 using namespace std;
 
 namespace TrickyUnits {
+
+	// This code is obtained from Stack Overflow. It's only meant for internal use
+	typedef struct {
+		double r;       // a fraction between 0 and 1
+		double g;       // a fraction between 0 and 1
+		double b;       // a fraction between 0 and 1
+	} rgb;
+
+	typedef struct {
+		double h;       // angle in degrees
+		double s;       // a fraction between 0 and 1
+		double v;       // a fraction between 0 and 1
+	} hsv;
+
+	static hsv   rgb2hsv(rgb in);
+	static rgb   hsv2rgb(hsv in);
+
+	hsv rgb2hsv(rgb in) {
+		hsv         out;
+		double      min, max, delta;
+
+		min = in.r < in.g ? in.r : in.g;
+		min = min < in.b ? min : in.b;
+
+		max = in.r > in.g ? in.r : in.g;
+		max = max > in.b ? max : in.b;
+
+		out.v = max;                                // v
+		delta = max - min;
+		if (delta < 0.00001) {
+			out.s = 0;
+			out.h = 0; // undefined, maybe nan?
+			return out;
+		}
+		if (max > 0.0) { // NOTE: if Max is == 0, this divide would cause a crash
+			out.s = (delta / max);                  // s
+		} else {
+			// if max is 0, then r = g = b = 0              
+			// s = 0, h is undefined
+			out.s = 0.0;
+			out.h = NAN;                            // its now undefined
+			return out;
+		}
+		if (in.r >= max)                           // > is bogus, just keeps compilor happy
+			out.h = (in.g - in.b) / delta;        // between yellow & magenta
+		else
+			if (in.g >= max)
+				out.h = 2.0 + (in.b - in.r) / delta;  // between cyan & yellow
+			else
+				out.h = 4.0 + (in.r - in.g) / delta;  // between magenta & cyan
+
+		out.h *= 60.0;                              // degrees
+
+		if (out.h < 0.0)
+			out.h += 360.0;
+
+		return out;
+	}
+
+
+	rgb hsv2rgb(hsv in) {
+		double      hh, p, q, t, ff;
+		long        i;
+		rgb         out;
+
+		if (in.s <= 0.0) {       // < is bogus, just shuts up warnings
+			out.r = in.v;
+			out.g = in.v;
+			out.b = in.v;
+			return out;
+		}
+		hh = in.h;
+		if (hh >= 360.0) hh = 0.0;
+		hh /= 60.0;
+		i = (long)hh;
+		ff = hh - i;
+		p = in.v * (1.0 - in.s);
+		q = in.v * (1.0 - (in.s * ff));
+		t = in.v * (1.0 - (in.s * (1.0 - ff)));
+
+		switch (i) {
+		case 0:
+			out.r = in.v;
+			out.g = t;
+			out.b = p;
+			break;
+		case 1:
+			out.r = q;
+			out.g = in.v;
+			out.b = p;
+			break;
+		case 2:
+			out.r = p;
+			out.g = in.v;
+			out.b = t;
+			break;
+
+		case 3:
+			out.r = p;
+			out.g = q;
+			out.b = in.v;
+			break;
+		case 4:
+			out.r = t;
+			out.g = p;
+			out.b = in.v;
+			break;
+		case 5:
+		default:
+			out.r = in.v;
+			out.g = p;
+			out.b = q;
+			break;
+		}
+		return out;
+	}
+
 
 	static void Ouwehoeren(std::string whatever) {
 #ifdef TQSG_Debug
@@ -69,6 +186,9 @@ namespace TrickyUnits {
 	static double rotatedegrees = 0;
 	static SDL_RendererFlip imgflip = SDL_FLIP_NONE;
 	static SDL_BlendMode BlendMode = SDL_BLENDMODE_BLEND;
+
+	static int TQSG_OriginX{ 0 };
+	static int TQSG_OriginY{ 0 };
 
 	static void _Panic(std::string errormessage) {
 		LastError = errormessage;
@@ -242,8 +362,8 @@ namespace TrickyUnits {
 		//printf("DEBUG! B.Color(%3d, %3d, %3d) \n", tcr, tcg, tcb);
 		//printf("DEBUG! A.Color(%3d, %3d, %3d) \n", tcr, tcg, tcb);
 		SDL_Rect Target;
-		Target.x = x - (int)ceil(hotx*scalex);
-		Target.y = y - (int)ceil(hoty*scaley);
+		Target.x = (x - (int)ceil(hotx*scalex))+TQSG_OriginX;
+		Target.y = (y - (int)ceil(hoty*scaley))+TQSG_OriginY;
 		Target.w = (int)ceil(Width() * scalex);
 		Target.h = (int)ceil(Height() * scaley);
 		if (altframing) {
@@ -271,8 +391,8 @@ namespace TrickyUnits {
 		//printf("DEBUG! B.Color(%3d, %3d, %3d) \n", tcr, tcg, tcb);
 		//printf("DEBUG! A.Color(%3d, %3d, %3d) \n", tcr, tcg, tcb);
 		SDL_Rect Target;
-		Target.x = x -(int)ceil(hotx * scalex);
-		Target.y = y -(int)ceil(hoty * scaley);
+		Target.x = (x -(int)ceil(hotx * scalex))+TQSG_OriginX;
+		Target.y = (y -(int)ceil(hoty * scaley))+TQSG_OriginY;
 		Target.w = (int)ceil(Width() * scalex);
 		Target.h = (int)ceil(Height() * scaley);
 		SDL_Point cpoint;
@@ -304,8 +424,8 @@ namespace TrickyUnits {
 			return;
 		}
 		SDL_Rect Target;
-		Target.x = x;
-		Target.y = y;
+		Target.x = x+TQSG_OriginX;
+		Target.y = y+TQSG_OriginY;
 		Target.w = w;
 		Target.h = h;
 		if (altframing) {
@@ -321,7 +441,9 @@ namespace TrickyUnits {
 		}
 	}
 
-	void TQSG_Image::Tile(int x, int y, int w, int h, int frame,int ix, int iy) {
+	void TQSG_Image::Tile(int ax, int ay, int w, int h, int frame,int ix, int iy) {
+		auto x = ax + TQSG_OriginX;
+		auto y = ay + TQSG_OriginY;
 		LastError = "";
 		if (altframing) {
 			LastError = "Altframing NOT supported for tiling (and is not likely to be supported in the future, either!)";
@@ -470,6 +592,11 @@ namespace TrickyUnits {
 		hoty = Height();
 	}
 
+	void TQSG_Image::HotGet(int& x, int& y) {
+		x = hotx;
+		y = hoty;
+	}
+
 	
 
 
@@ -543,6 +670,16 @@ namespace TrickyUnits {
 		h = mode.h;
 	}
 
+	void TQSG_SetOrigin(int x, int y) {
+		TQSG_OriginX = x;
+		TQSG_OriginY = y;
+	}
+
+	void TQSG_GetOrigin(int& x, int& y) {
+		x = TQSG_OriginX;
+		y = TQSG_OriginY;
+	}
+
 
 	void TQSG_ScreenSize(int* w, int* h) {
 		SDL_GetRendererOutputSize(gRenderer, w, h);
@@ -554,14 +691,19 @@ namespace TrickyUnits {
 		R.y = y;
 		R.w = w;
 		R.h = h;
-		SDL_RenderSetViewport(gRenderer,&R);
+		if (SDL_RenderSetViewport(gRenderer, &R) != 0) {
+			cout << "\x7\x1b[31mERROR!\x1b[0m\t TQSQ_ViewPort(" << x << "," << y << "," << w << "," << h << "): " << SDL_GetError() << endl;
+		}
 		//SDL_RenderSetClipRect(gRenderer, &R);
 	}
 
 	void TQSG_ViewPort() {
 		int w, h;
-		SDL_GetRendererOutputSize(gRenderer, &w, &h);
-		TQSG_ViewPort(0, 0, w, h);
+		//SDL_GetRendererOutputSize(gRenderer, &w, &h);
+		if (SDL_RenderSetViewport(gRenderer, NULL) != 0) {
+			cout << "\x7\x1b[31mERROR!\x1b[0m\t TQSQ_ViewPort(): " << SDL_GetError() << endl;
+		}
+		//TQSG_ViewPort(0, 0, w, h);
 	}
 
 	void TQSG_GetViewPort(int* x, int* y, int* w, int* h) {
@@ -602,6 +744,15 @@ namespace TrickyUnits {
 		*r = tcr;
 		*g = tcg;
 		*b = tcb;
+	}
+
+	void TQSG_ColorHSV(double Hue, double Saturation, double Value) {
+		hsv _hsv{ Hue,Saturation,Value };
+		auto _rgb = hsv2rgb(_hsv);
+		Uint8 R = floor(_rgb.r * 255.0);
+		Uint8 G = floor(_rgb.g * 255.0);
+		Uint8 B = floor(_rgb.b * 255.0);
+		TQSG_Color(R, G, B);
 	}
 
 	void TQSG_SetAlpha(Uint8 a) {
@@ -1109,8 +1260,22 @@ namespace TrickyUnits {
 	}
 
 	void TQSG_PureAutoImage::Draw(int x, int y, int frame) { _img.Draw(x, y, frame); }
-
+	void TQSG_PureAutoImage::Tile(int x, int y, int w, int h, int frame) { _img.Tile(x, y, w, h, frame); }
+	void TQSG_PureAutoImage::Tile(int x, int y, int w, int h, int ix, int iy, int frame) { _img.Tile(x, y, w, h, frame,ix,iy); }
+	void TQSG_PureAutoImage::Stretch(int x, int y, int w, int h, int frame) { _img.StretchDraw(x, y, w, h, frame); }
 	void TQSG_PureAutoImage::HotBottomRight() { _img.Hot(_img.Width(), _img.Height()); }
+
+	int TQSG_PureAutoImage::W() {
+		return _img.Width();
+	}
+
+	int TQSG_PureAutoImage::H() {
+		return _img.Height();
+	}
+
+	void TQSG_PureAutoImage::Hot(int x, int y) { _img.Hot(x, y); }
+
+	void TQSG_PureAutoImage::HotGet(int& x, int& y) { _img.HotGet(x, y); }
 
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(std::string file) {
 		auto ret{ std::make_shared<TQSG_PureAutoImage>() };
@@ -1136,5 +1301,41 @@ namespace TrickyUnits {
 		RWBuf = SDL_RWFromMem((void*)buf, size);
 		ret->Img()->Create(RWBuf);
 	}
+
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_GrabScreen() {
+		auto Tex{ SDL_CreateTextureFromSurface(gRenderer, SDL_GetWindowSurface(gWindow)) };
+		auto Ret{ std::make_shared<TQSG_PureAutoImage>() };
+		Ret->Img()->Create(Tex);
+		return Ret;
+	}
+
+	TQSG_AutoImageFont TQSG_LoadAutoImageFont(std::string jcrfile, std::string Dir) {
+		auto J = jcr6::Dir(jcrfile);
+		return TQSG_LoadAutoImageFont(&J, Dir);
+	}
+
+	TQSG_AutoImageFont TQSG_LoadAutoImageFont(jcr6::JT_Dir* jcrdir, std::string File) {
+		auto ret{ std::make_shared<TQSG_PureAutoImageFont>() };
+		ret->Font()->LoadFont(File);
+		return ret;
+	}
+
+	TQSG_ImageFont* TQSG_PureAutoImageFont::Font() { return &_fnt; }
+
+	void TQSG_PureAutoImageFont::Draw(std::string txt, int x, int y, unsigned char ha, unsigned char va) { _fnt.Draw(txt, x, y, ha, va); }
+
+	int TQSG_PureAutoImageFont::W(std::string txt) {
+		return _fnt.TextWidth(txt.c_str());
+	}
+
+	int TQSG_PureAutoImageFont::H(std::string txt) {
+		if (!_fnt.TextHeight("TESTING")) _fnt.TextWidth("TESTING"); // Cheating to void a bug I've not yet been around to fix
+		return _fnt.TextHeight(txt.c_str());
+	}
+
+	TQSG_PureAutoImageFont::~TQSG_PureAutoImageFont() {
+		_fnt.Kill();
+	}
+
 
 }
