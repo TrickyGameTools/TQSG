@@ -20,6 +20,7 @@
 #pragma once
 
 // C++
+#include <memory>
 #include<string>
 
 // SDL
@@ -47,7 +48,7 @@ public:
 	void ChPlay(int channel, int loops = 0);
 
 	bool HasChunk();
-
+	bool AutoKill{ true }; // Use with CARE!
 	~TQSA_Audio();
 };
 
@@ -56,6 +57,24 @@ class TQSA_Music {
 
 };
 */
+
+class TQSA_AutoAudioReal{
+private:
+	TQSA_Audio ActualAudio;
+public:
+	TQSA_Audio* Audio(); // Pointer needed for some stuff, but I reocmmend against calling this directly.
+	bool AlwaysLoop{ false };
+	int Play(int loops = 0);
+	void ChPlay(int channel, int loops = 0);
+	bool HasChunk();
+	TQSA_AutoAudioReal();
+	~TQSA_AutoAudioReal();
+};
+typedef std::shared_ptr<TQSA_AutoAudioReal> TQSA_AutoAudio;
+
+TQSA_AutoAudio LoadAudio(const char* File);
+TQSA_AutoAudio LoadAudio(std::string MainFile, std::string Entry);
+TQSA_AutoAudio LoadAudio(jcr6::JT_Dir& MainFile, std::string Entry);
 
 bool TQSA_Init(int demandflags=0);
 void TQSA_Close();

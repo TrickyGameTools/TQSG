@@ -20,6 +20,24 @@
 #include <iostream>
 #include "TQSA.hpp"
 
+TQSA_AutoAudio LoadAudio(const char* File) {
+	auto ret{ std::make_shared<TQSA_AutoAudioReal>() };
+	ret->Audio()->Load(File);
+	return ret;
+}
+
+TQSA_AutoAudio LoadAudio(std::string MainFile, std::string Entry) {
+	auto ret{ std::make_shared<TQSA_AutoAudioReal>() };
+	ret->Audio()->Load(MainFile,Entry);
+	return ret;
+}
+
+TQSA_AutoAudio LoadAudio(jcr6::JT_Dir& MainFile, std::string Entry) {
+	auto ret{ std::make_shared<TQSA_AutoAudioReal>() };
+	ret->Audio()->Load(MainFile, Entry);
+	return ret;
+}
+
 bool TQSA_Init(int demandflags) {
 	bool success = true;
 	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
@@ -81,5 +99,25 @@ bool TQSA_Audio::HasChunk() {
 }
 
 TQSA_Audio::~TQSA_Audio() {
-	Kill();
+	if (AutoKill) Kill();
 }
+
+TQSA_Audio* TQSA_AutoAudioReal::Audio() {
+	return &ActualAudio;
+}
+
+int TQSA_AutoAudioReal::Play(int loops) {
+	return ActualAudio.Play(loops||AlwaysLoop);	
+}
+
+void TQSA_AutoAudioReal::ChPlay(int channel, int loops) {
+	return ActualAudio.ChPlay(channel, loops || AlwaysLoop);
+}
+
+bool TQSA_AutoAudioReal::HasChunk() {
+	return ActualAudio.HasChunk();
+}
+
+TQSA_AutoAudioReal::TQSA_AutoAudioReal() { ActualAudio.AutoKill = false; }
+
+TQSA_AutoAudioReal::~TQSA_AutoAudioReal() {	ActualAudio.Kill();}
