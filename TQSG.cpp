@@ -680,6 +680,10 @@ namespace TrickyUnits {
 		y = TQSG_OriginY;
 	}
 
+	void TQSG_SetMouse(int x, int y) {
+		SDL_WarpMouseInWindow(gWindow, x, y);
+	}
+
 
 	void TQSG_ScreenSize(int* w, int* h) {
 		SDL_GetRendererOutputSize(gRenderer, w, h);
