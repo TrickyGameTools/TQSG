@@ -30,51 +30,53 @@
 // JCR6
 #include <jcr6_core.hpp>
 
+namespace TrickyUnits {
 
-class TQSA_Audio {
-private:
-	Mix_Chunk* ActualChunk=NULL;
-public:
-	/// <summary>
-	/// Disposes the sound chunk attacked from the memory (would happen automatically if the destructor is called)
-	/// </summary>
-	void Kill();
+	class TQSA_Audio {
+	private:
+		Mix_Chunk* ActualChunk = NULL;
+	public:
+		/// <summary>
+		/// Disposes the sound chunk attacked from the memory (would happen automatically if the destructor is called)
+		/// </summary>
+		void Kill();
 
-	void Load(const char* File);
-	void Load(jcr6::JT_Dir JCRResource, std::string JCREntry);
-	void Load(std::string JCRMain, std::string JCREntry);
+		void Load(const char* File);
+		void Load(jcr6::JT_Dir JCRResource, std::string JCREntry);
+		void Load(std::string JCRMain, std::string JCREntry);
 
-	int Play(int loops = 0);
-	void ChPlay(int channel, int loops = 0);
+		int Play(int loops = 0);
+		void ChPlay(int channel, int loops = 0);
 
-	bool HasChunk();
-	bool AutoKill{ true }; // Use with CARE!
-	~TQSA_Audio();
-};
+		bool HasChunk();
+		bool AutoKill{ true }; // Use with CARE!
+		~TQSA_Audio();
+	};
 
-/* for now not interested!
-class TQSA_Music {
+	/* for now not interested!
+	class TQSA_Music {
 
-};
-*/
+	};
+	*/
 
-class TQSA_AutoAudioReal{
-private:
-	TQSA_Audio ActualAudio;
-public:
-	TQSA_Audio* Audio(); // Pointer needed for some stuff, but I reocmmend against calling this directly.
-	bool AlwaysLoop{ false };
-	int Play(int loops = 0);
-	void ChPlay(int channel, int loops = 0);
-	bool HasChunk();
-	TQSA_AutoAudioReal();
-	~TQSA_AutoAudioReal();
-};
-typedef std::shared_ptr<TQSA_AutoAudioReal> TQSA_AutoAudio;
+	class TQSA_AutoAudioReal {
+	private:
+		TQSA_Audio ActualAudio;
+	public:
+		TQSA_Audio* Audio(); // Pointer needed for some stuff, but I reocmmend against calling this directly.
+		bool AlwaysLoop{ false };
+		int Play(int loops = 0);
+		void ChPlay(int channel, int loops = 0);
+		bool HasChunk();
+		TQSA_AutoAudioReal();
+		~TQSA_AutoAudioReal();
+	};
+	typedef std::shared_ptr<TQSA_AutoAudioReal> TQSA_AutoAudio;
 
-TQSA_AutoAudio LoadAudio(const char* File);
-TQSA_AutoAudio LoadAudio(std::string MainFile, std::string Entry);
-TQSA_AutoAudio LoadAudio(jcr6::JT_Dir& MainFile, std::string Entry);
+	TQSA_AutoAudio LoadAudio(const char* File);
+	TQSA_AutoAudio LoadAudio(std::string MainFile, std::string Entry);
+	TQSA_AutoAudio LoadAudio(jcr6::JT_Dir& MainFile, std::string Entry);
 
-bool TQSA_Init(int demandflags=0);
-void TQSA_Close();
+	bool TQSA_Init(int demandflags = 0);
+	void TQSA_Close();
+}

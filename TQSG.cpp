@@ -1017,9 +1017,10 @@ namespace TrickyUnits {
 		else if (TriedToLoad[base][ch]) return; // If loaded before, don't load it again
 		if (!JCR_Linked) {
 			char FE[300];
-			sprintf_s(FE, 298, "Tried to load sub for [%d,%d] while no JCR6 resource has been linked", base, ch);
+			sprintf_s(FE, "Tried to load sub for [%d,%d] while no JCR6 resource has been linked\n", base, ch);
 			LastError = FE;
-			printf("\x1b[31mERROR!\x1b\t%s", FE);
+			printf("\x1b[31mERROR! \x1b[32mTQSG_IMGFONT\x1b[0m\t%s", FE);
+			printf("\tFnt: %s\n", Prefix.c_str());
 			return;
 		}
 		Ouwehoeren("Loading new letter (" + to_string(base) + "," + to_string(ch) + ")");
@@ -1221,6 +1222,7 @@ namespace TrickyUnits {
 	}
 
 	void TQSG_ImageFont::LoadFont(jcr6::JT_Dir& JCRRes, std::string Bundle, bool all) {
+		cout << "Linking Font to JCR6 for (" << Bundle << ")\n";
 		JCR = JCRRes;
 		Prefix = Bundle;
 		JCR_Linked = true;
@@ -1319,8 +1321,9 @@ namespace TrickyUnits {
 	}
 
 	TQSG_AutoImageFont TQSG_LoadAutoImageFont(jcr6::JT_Dir* jcrdir, std::string File) {
+		cout << "Loading Auto Image Font\n"; // debug
 		auto ret{ std::make_shared<TQSG_PureAutoImageFont>() };
-		ret->Font()->LoadFont(File);
+		ret->Font()->LoadFont(*jcrdir,File);
 		return ret;
 	}
 

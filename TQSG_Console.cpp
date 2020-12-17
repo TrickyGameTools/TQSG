@@ -179,7 +179,7 @@ namespace TrickyUnits {
 		ConsoleLines.push_back(CL); 
 		ConsoleLines.push_back(CLA);
 	}
-	ConsoleLine ConsoleWrite(std::string Txt, int R, int G, int B) { ConsolePrint(Txt, R, G, B); }
+	ConsoleLine ConsoleWrite(std::string Txt, int R, int G, int B) { return ConsolePrint(Txt, R, G, B); }
 	void ConsoleDoublePrint(std::string Txt1, std::string Txt2,  int R, int G, int B, int R2, int G2, int B2){ ConsoleDoublePrint2(Txt1, Txt2, 0, R, G, B, R2, G2, B2); }
 	//void ConsoleDoublePrint2(std::string Txt1, std::string Txt2, int offs, int R, int G, int B, int R2, int G2, int B2) { ConsoleDoublePrint(Txt1, Txt2, offs, R, G, B, R2, G2, B2); }
 

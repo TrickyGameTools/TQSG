@@ -32,6 +32,7 @@ namespace TrickyUnits {
 
 	extern TQSG_AutoImage ConsoleBackGroundPicture;
 	extern std::string ConsoleResultLine;
+	extern std::string ConsoleCommand;
 
 	// For the time being only there for compatibility with translations form BlitzMax.
 	void ConsoleWriteLogFile(std::string LogFile, std::string BGCOLOR = "#000000");
