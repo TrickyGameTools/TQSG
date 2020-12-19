@@ -2,7 +2,7 @@
 // TQSG_Console.hpp
 // Console (header)
 // version: 20.12.19
-// Copyright (C) 2012, 2015, 2016 Jeroen P. Broks
+// Copyright (C) 2012, 2015, 2016, 2020 Jeroen P. Broks
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
 // arising from the use of this software.
