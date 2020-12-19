@@ -1,7 +1,7 @@
 // Lic:
 // TQSA.cpp
 // Tricky's Quick SDL Audio
-// version: 20.09.05
+// version: 20.12.19
 // Copyright (C) 2020 Jeroen P. Broks
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
