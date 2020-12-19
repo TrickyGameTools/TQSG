@@ -58,6 +58,7 @@ namespace TrickyUnits {
 	}
 
 	void SetConsoleFont(jcr6::JT_Dir* JCR, std::string FontBundle) {
+		std::cout << "Setting TQSG_ConsoleFont to bundle: " << FontBundle << "!\n";
 		ConsoleFont.LoadFont(*JCR, FontBundle);
 		ConsoleFont.Draw("The quick brown fox, jumps over the lazy dog! THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG!", TQSG_ScreenWidth(), TQSG_ScreenHeight()); // Drawn OUTSIDE the screen boundaries, but this makes sure the height calculation is right, as that is a bit of a problem, still... :-/
 		std::cout << "Font Width Test: " << ConsoleFont.TextWidth("The quick brown fox, jumps over the lazy dog! THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG!") <<
