@@ -1,7 +1,7 @@
 // Lic:
 // TQSG.cpp
 // TQSG Code
-// version: 20.11.30
+// version: 20.12.19
 // Copyright (C) 2020 Jeroen P. Broks
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
@@ -633,7 +633,9 @@ namespace TrickyUnits {
 	}
 
 	void TQSG_SetBlend(SDL_BlendMode BM) { BlendMode = BM; }
-	void TQSG_SetBlend(TQSG_Blend BM) { BlendMode = (SDL_BlendMode)BM; }	
+	void TQSG_SetBlend(TQSG_Blend BM) { BlendMode = (SDL_BlendMode)BM; }
+	TQSG_Blend TQSG_GetBlend() { return (TQSG_Blend)BlendMode; }
+
 
 	void TQSG_Plot(int x, int y) {
 		SDL_SetRenderDrawColor(gRenderer, tcr, tcg, tcb,tcalpha);
@@ -733,7 +735,7 @@ namespace TrickyUnits {
 		static auto oud{ SDL_GetTicks() };		
 		static auto mt{ 0 };
 		if (minticks >= 0) mt = minticks;
-		while (minticks && SDL_GetTicks() - oud < mt) SDL_Delay(1);
+		while (minticks && (SDL_GetTicks() - oud < mt)) SDL_Delay(1);
 		oud = SDL_GetTicks();		
 		SDL_RenderPresent(gRenderer);
 	}
@@ -1306,6 +1308,7 @@ namespace TrickyUnits {
 		SDL_RWops* RWBuf{ NULL };
 		RWBuf = SDL_RWFromMem((void*)buf, size);
 		ret->Img()->Create(RWBuf);
+		return ret;
 	}
 
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_GrabScreen() {
