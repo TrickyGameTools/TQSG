@@ -1,7 +1,7 @@
 // Lic:
 // TQSG.cpp
 // TQSG Code
-// version: 20.12.19
+// version: 20.12.29
 // Copyright (C) 2020 Jeroen P. Broks
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
@@ -34,6 +34,7 @@
 // Tricky's Units
 #include <QuickStream.hpp>
 #include <QuickString.hpp>
+#include <TrickySTOI.hpp>
 
 // JCR6
 #include <jcr6_core.hpp>
@@ -441,6 +442,8 @@ namespace TrickyUnits {
 		}
 	}
 
+	
+
 	void TQSG_Image::Tile(int ax, int ay, int w, int h, int frame,int ix, int iy) {
 		auto x = ax + TQSG_OriginX;
 		auto y = ay + TQSG_OriginY;
@@ -540,6 +543,34 @@ namespace TrickyUnits {
 		//TQSG_Color(180, 0, 255);
 		//TQSG_Rect(tsx, tsy, tw, th,true);
 		
+	}
+
+	void TQSG_Image::Blit(int ax, int ay, int isx, int isy, int iex, int iey, int frame) {
+		auto
+			x = ax + TQSG_OriginX,
+			y = ay + TQSG_OriginY,
+			imgh = Height(),
+			imgw = Width();
+		SDL_Rect 
+			Target, 
+			Source;
+		if (altframing) {
+			LastError = "Altframing NOT supported for Blitting (and is not likely to be supported in the future, either!)";
+			return;
+		}
+		Source.x = max(isx, 0);
+		Source.y = max(isy, 0);
+		Source.w = min(iex, imgw - isx);
+		Source.h = min(iey, imgh - isy);
+		if (Source.w < 1 || Source.h < 1) { LastError = "Blit format error"; return; }
+		Target.x = x;
+		Target.y = y;
+		Target.w = Source.w * scalex;
+		Target.h = Source.h * scaley;
+		SDL_SetTextureColorMod(Textures[frame], tcr, tcg, tcb);
+		SDL_SetTextureBlendMode(Textures[frame], BlendMode);
+		SDL_SetTextureAlphaMod(Textures[frame], tcalpha);
+		SDL_RenderCopy(gRenderer, Textures[frame], &Source, &Target);
 	}
 
 
@@ -1271,6 +1302,7 @@ namespace TrickyUnits {
 	void TQSG_PureAutoImage::Tile(int x, int y, int w, int h, int frame) { _img.Tile(x, y, w, h, frame); }
 	void TQSG_PureAutoImage::Tile(int x, int y, int w, int h, int ix, int iy, int frame) { _img.Tile(x, y, w, h, frame,ix,iy); }
 	void TQSG_PureAutoImage::Stretch(int x, int y, int w, int h, int frame) { _img.StretchDraw(x, y, w, h, frame); }
+	void TQSG_PureAutoImage::Blit(int x, int y, int isx, int isy, int iex, int iey, int frame) { _img.Blit(x, y, isx, isy, iex, iey, frame); }
 	void TQSG_PureAutoImage::HotBottomRight() { _img.Hot(_img.Width(), _img.Height()); }
 
 	int TQSG_PureAutoImage::W() {
@@ -1293,13 +1325,24 @@ namespace TrickyUnits {
 
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(std::string jcrfile, std::string file) {
 		auto ret{ std::make_shared<TQSG_PureAutoImage>() };
-		ret->Img()->Create(jcrfile,file);
+		ret->Img()->Create(jcrfile,file);		
 		return ret;
 	}
 
-	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(jcr6::JT_Dir jcrdir, std::string file) {
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(jcr6::JT_Dir& jcrdir, std::string file) {
 		auto ret{ std::make_shared<TQSG_PureAutoImage>() };
+		auto hot = StripExt(file)+".hot";
 		ret->Img()->Create(jcrdir, file);
+		if (jcrdir.EntryExists(hot)) {
+			auto hd = Split(jcrdir.String(hot), ',');
+			if (hd.size() == 2) cout << "\7\x1b[31mERROR! ERROR!\x1b[0m\tInvalid hot file: " << hot << endl;
+			else {
+				auto
+					x = ToInt(hd[0]),
+					y = ToInt(hd[1]);
+				ret->Img()->Hot(x, y);
+			}
+		}
 		return ret;
 	}
 

@@ -1,7 +1,7 @@
 // Lic:
 // TQSG.hpp
 // TQSG Header
-// version: 20.12.19
+// version: 20.12.29
 // Copyright (C) 2020 Jeroen P. Broks
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
@@ -117,6 +117,7 @@ namespace TrickyUnits {
 		/// <param name="ix"></param>
 		/// <param name="iy"></param>
 		void Tile(int x, int y, int w, int h, int frame = 0, int ix = 0, int iy = 0);
+		void Blit(int x, int y, int isx, int isy, int iex, int iey, int frame = 0);
 
 
 		/// <returns>Width of image</returns>
@@ -255,6 +256,7 @@ namespace TrickyUnits {
 		void Tile(int x, int y, int w, int h, int frame = 0);
 		void Tile(int x, int y, int w, int h, int ix, int iy, int frame=0);
 		void Stretch(int x, int y, int w, int h, int frame = 0);
+		void Blit(int x, int y, int isx, int isy, int iex, int iey, int frame = 0);
 		void HotBottomRight();
 		int W();
 		int H();
