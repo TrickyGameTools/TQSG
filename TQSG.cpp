@@ -1334,8 +1334,8 @@ namespace TrickyUnits {
 		auto hot = StripExt(file)+".hot";
 		ret->Img()->Create(jcrdir, file);
 		if (jcrdir.EntryExists(hot)) {
-			auto hd = Split(jcrdir.String(hot), ',');
-			if (hd.size() == 2) cout << "\7\x1b[31mERROR! ERROR!\x1b[0m\tInvalid hot file: " << hot << endl;
+			auto hd = Split(Trim(jcrdir.String(hot)), ',');
+			if (hd.size() != 2) cout << "\7\x1b[31mERROR! ERROR!\x1b[0m\tInvalid hot file: " << hot << endl;
 			else {
 				auto
 					x = ToInt(hd[0]),

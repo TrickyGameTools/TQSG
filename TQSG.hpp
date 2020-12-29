@@ -268,7 +268,7 @@ namespace TrickyUnits {
 	typedef std::shared_ptr<TQSG_PureAutoImage> TQSG_AutoImage;
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(std::string file);
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(std::string jcrfile,std::string file);
-	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(jcr6::JT_Dir jcrdir, std::string file);
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(jcr6::JT_Dir &jcrdir, std::string file);
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(int size, const char* buf);
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_GrabScreen();
 
