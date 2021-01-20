@@ -1334,13 +1334,26 @@ namespace TrickyUnits {
 		auto hot = StripExt(file)+".hot";
 		ret->Img()->Create(jcrdir, file);
 		if (jcrdir.EntryExists(hot)) {
-			auto hd = Split(Trim(jcrdir.String(hot)), ',');
-			if (hd.size() != 2) cout << "\7\x1b[31mERROR! ERROR!\x1b[0m\tInvalid hot file: " << hot << endl;
+			auto hotstring = Trim(jcrdir.String(hot)); hotstring = TReplace(hotstring, ':', ',');
+			auto hd = Split(hotstring, ',');
+			if (hd.size() == 4) {
+				if (hd[0] == "@RHOT" && hd[3] == "@END") {
+					auto
+						x = ToInt(hd[1]),
+						y = ToInt(hd[2]);
+					ret->Img()->Hot(x, y);
+					//cout << "R:Hotspot for " << file << " set to (" << x << ',' << y << ")\n"; // DEBUG ONLY!
+				} else {
+					cout << "\7\x1b[31mERROR! ERROR!\x1b[0m\tInvalid hot file: " << hot << endl << "= RHOT file expected, but that is not what this looks like " << endl << "= Datastring:" << hotstring << endl;
+				}
+			}
+			else if (hd.size() != 2) cout << "\7\x1b[31mERROR! ERROR!\x1b[0m\tInvalid hot file: " << hot << endl << "= Expcted 2 parameters from hot but I got " << hd.size() << endl << "= Datastring:" << hotstring << endl;
 			else {
 				auto
 					x = ToInt(hd[0]),
 					y = ToInt(hd[1]);
 				ret->Img()->Hot(x, y);
+				//cout << "P:Hotspot for " << file << " set to (" << x << ',' << y << ")\n"; // DEBUG ONLY!
 			}
 		}
 		return ret;
