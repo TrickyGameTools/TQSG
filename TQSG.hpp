@@ -1,8 +1,8 @@
 // Lic:
 // TQSG.hpp
 // TQSG Header
-// version: 20.12.29
-// Copyright (C) 2020 Jeroen P. Broks
+// version: 21.01.26
+// Copyright (C) 2020, 2021 Jeroen P. Broks
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
 // arising from the use of this software.
@@ -86,6 +86,15 @@ namespace TrickyUnits {
 		void Create(std::string file);
 		void Create(jcr6::JT_Dir& JCR, std::string entry);
 		void Create(std::string mainfile, std::string entry);
+
+		/// <summary>
+		/// Duplicates an image! Please note this is far from perfect and not to ention SLOOOOOW!
+		/// </summary>
+		/// <param name="Original">Original to be copied</param>
+		void Copy(TQSG_Image* Original);
+
+		void Negative();
+		void Negative(TQSG_Image* Copy);
 
 		void AltFrame(int w, int h, int num);
 
@@ -263,6 +272,7 @@ namespace TrickyUnits {
 		void Hot(int x, int y);
 		void HotCenter();
 		void HotGet(int& x, int& y);		
+		void Negative();
 	};
 
 	typedef std::shared_ptr<TQSG_PureAutoImage> TQSG_AutoImage;
@@ -271,6 +281,11 @@ namespace TrickyUnits {
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(jcr6::JT_Dir &jcrdir, std::string file);
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(int size, const char* buf);
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_GrabScreen();
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_Copy(TQSG_AutoImage Ori);
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_Copy(TQSG_Image* Ori);
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_Negative(TQSG_AutoImage Ori);
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_Negative(TQSG_Image* Ori);
+
 
 	// Don't EVER use this directly but always use a shared pointer in stead. Safer that way.
 	class TQSG_PureAutoImageFont {

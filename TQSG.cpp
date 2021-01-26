@@ -1,8 +1,8 @@
 // Lic:
 // TQSG.cpp
 // TQSG Code
-// version: 20.12.29
-// Copyright (C) 2020 Jeroen P. Broks
+// version: 21.01.26
+// Copyright (C) 2020, 2021 Jeroen P. Broks
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
 // arising from the use of this software.
@@ -309,6 +309,53 @@ namespace TrickyUnits {
 	void TQSG_Image::Create(std::string mainfile, std::string entry) {
 		auto J = jcr6::Dir(mainfile);
 		TrueLoadJCR(J, entry);
+	}
+
+	void TQSG_Image::Copy(TQSG_Image* Original) {
+		Uint32 format = SDL_GetWindowPixelFormat(gWindow);
+		//TQSG_Image ret;
+		auto ret{ this }; // better?
+		ret->hotx = Original->hotx;
+		ret->hoty = Original->hoty;
+		ret->altframing = Original->altframing;
+		for (auto af : Original->AltFrames) ret->AltFrames.push_back(af);
+		for (auto tex : Original->Textures) {
+			auto tcopy = SDL_CreateTexture(gRenderer, format, SDL_TEXTUREACCESS_STREAMING, Original->Width(), Original->Height());
+			void* cpixels;
+			void* opixels;
+			int cpitch,opitch;
+				//pixels[x + (y * SCREEN_WIDTH)] = SDL_MapRGB(fmt, 255, 0, 0);
+			SDL_LockTexture(tcopy, NULL, &cpixels, &cpitch);
+			SDL_LockTexture(tex, NULL, &opixels, &opitch);
+			for (unsigned long long i = 0; i < Original->Width() * Original->Height(); i++) ((Uint32*)cpixels)[i] = ((Uint32*)opixels)[i];
+			SDL_UnlockTexture(tcopy);
+			SDL_UnlockTexture(tex);
+		}
+	}
+
+
+
+	void TQSG_Image::Negative() {
+		for (auto Tex : Textures) {
+			Uint32 format = SDL_GetWindowPixelFormat(gWindow);
+			auto pixformat = SDL_AllocFormat(format);
+			void* pixels;
+			int pitch;
+			SDL_LockTexture(Tex, NULL, &pixels, &pitch);
+			for (unsigned long long i = 0; i < Width() * Height(); ++i) {
+				Uint8
+					r,
+					g,
+					b;				
+				SDL_GetRGB(((Uint32*)pixels)[i], pixformat, &r, &g, &b);
+				((Uint32*)pixels)[i]= SDL_MapRGB(pixformat, 255-r, 255-g, 255-b);
+			}
+		}
+	}
+
+	void TQSG_Image::Negative(TQSG_Image* _Copy) {
+		Copy(_Copy);
+		Negative();
 	}
 
 	void TQSG_Image::AltFrame(int w, int h, int num) {
@@ -1317,6 +1364,10 @@ namespace TrickyUnits {
 
 	void TQSG_PureAutoImage::HotGet(int& x, int& y) { _img.HotGet(x, y); }
 
+	void TQSG_PureAutoImage::Negative() {
+		_img.Negative();
+	}
+
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(std::string file) {
 		auto ret{ std::make_shared<TQSG_PureAutoImage>() };
 		ret->Img()->Create(file);
@@ -1373,6 +1424,28 @@ namespace TrickyUnits {
 		Ret->Img()->Create(Tex);
 		return Ret;
 	}
+
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_Copy(TQSG_AutoImage Ori) {
+		auto ret{ std::make_shared<TQSG_PureAutoImage>() };
+		ret->Img()->Copy(Ori->Img());
+		return ret;
+	}
+
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_Copy(TQSG_Image* Ori) {
+		auto ret{ std::make_shared<TQSG_PureAutoImage>() };
+		ret->Img()->Copy(Ori);
+		return ret;
+	}
+
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_Negative(TQSG_AutoImage Ori) {
+		auto ret{ TQSG_Copy(Ori) };
+		Ori->Negative();
+	}
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_Negative(TQSG_Image* Ori) {
+		auto ret{ TQSG_Copy(Ori) };
+		Ori->Negative();
+	}
+
 
 	TQSG_AutoImageFont TQSG_LoadAutoImageFont(std::string jcrfile, std::string Dir) {
 		auto J = jcr6::Dir(jcrfile);
