@@ -1439,11 +1439,13 @@ namespace TrickyUnits {
 
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_Negative(TQSG_AutoImage Ori) {
 		auto ret{ TQSG_Copy(Ori) };
-		Ori->Negative();
+		ret->Negative();
+		return ret;
 	}
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_Negative(TQSG_Image* Ori) {
 		auto ret{ TQSG_Copy(Ori) };
-		Ori->Negative();
+		ret->Negative();
+		return ret;
 	}
 
 
