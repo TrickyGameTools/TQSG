@@ -205,8 +205,9 @@ namespace TrickyUnits {
 			sprintf_s(FE, 395, "Texture assignment out of bouds! (%d/%d)", frame, (int)Textures.size());
 			LastError = FE; 
 			return;
-		}
+		}		
 		auto buf = IMG_LoadTexture_RW(gRenderer, data, autofree);
+	
 		if (buf == NULL) { LastError = "Getting texture from SLD_RWops failed!"; return; }
 		if (frame < 0) {
 			Textures.push_back(buf);
@@ -326,8 +327,14 @@ namespace TrickyUnits {
 			int cpitch,opitch;
 				//pixels[x + (y * SCREEN_WIDTH)] = SDL_MapRGB(fmt, 255, 0, 0);
 			SDL_LockTexture(tcopy, NULL, &cpixels, &cpitch);
-			SDL_LockTexture(tex, NULL, &opixels, &opitch);
-			for (unsigned long long i = 0; i < Original->Width() * Original->Height(); i++) ((Uint32*)cpixels)[i] = ((Uint32*)opixels)[i];
+			if (SDL_LockTexture(tex, NULL, &opixels, &opitch) <0) {
+				cout << "TQSG_Image::Copy(" << (int)Original << "): (got) " << SDL_GetError() << endl;
+			};
+			unsigned long long m = (unsigned long long)(((unsigned long long)Original->Width()) * Original->Height());
+			for (unsigned long long i = 0; i < m; i++) {
+				auto v{ ((Uint32*)opixels)[i] };
+				((Uint32*)cpixels)[i] = v;
+			}
 			SDL_UnlockTexture(tcopy);
 			SDL_UnlockTexture(tex);
 		}
@@ -438,14 +445,30 @@ namespace TrickyUnits {
 		}
 		//printf("DEBUG! B.Color(%3d, %3d, %3d) \n", tcr, tcg, tcb);
 		//printf("DEBUG! A.Color(%3d, %3d, %3d) \n", tcr, tcg, tcb);
+		/*
 		SDL_Rect Target;
 		Target.x = (x -(int)ceil(hotx * scalex))+TQSG_OriginX;
 		Target.y = (y -(int)ceil(hoty * scaley))+TQSG_OriginY;
 		Target.w = (int)ceil(Width() * scalex);
 		Target.h = (int)ceil(Height() * scaley);
-		SDL_Point cpoint;
+		//*/
+		//*
+		SDL_Rect Target  {
+			(x-hotx)+TQSG_OriginX,
+			(y-hoty)+TQSG_OriginY,
+			(int)(Width()*scalex),
+			(int)(Height()*scaley)
+		};
+		
+		//*/
+
+		/*
+		SDL_Point cpoint;		
 		cpoint.x = hotx;
 		cpoint.y = hoty;
+		*/
+		SDL_Point cpoint{ (int)(hotx * scalex),(int)(hoty * scaley) };
+		
 		//SDL_RenderCopy(gRenderer, Textures[frame], NULL, &Target);
 		if (altframing) {
 			SDL_SetTextureBlendMode(Textures[0], BlendMode);
@@ -1346,6 +1369,7 @@ namespace TrickyUnits {
 	}
 
 	void TQSG_PureAutoImage::Draw(int x, int y, int frame) { _img.Draw(x, y, frame); }
+	void TQSG_PureAutoImage::XDraw(int x, int y, int frame) { _img.XDraw(x, y, frame); }
 	void TQSG_PureAutoImage::Tile(int x, int y, int w, int h, int frame) { _img.Tile(x, y, w, h, frame); }
 	void TQSG_PureAutoImage::Tile(int x, int y, int w, int h, int ix, int iy, int frame) { _img.Tile(x, y, w, h, frame,ix,iy); }
 	void TQSG_PureAutoImage::Stretch(int x, int y, int w, int h, int frame) { _img.StretchDraw(x, y, w, h, frame); }

@@ -262,6 +262,7 @@ namespace TrickyUnits {
 		TQSG_Image* Img(); // Only there to quickly try things out, but beware for deprecation over time, as I don't like this pointer to be here!
 		~TQSG_PureAutoImage();
 		void Draw(int x, int y, int frame = 0);
+		void XDraw(int x, int y, int frame = 0);
 		void Tile(int x, int y, int w, int h, int frame = 0);
 		void Tile(int x, int y, int w, int h, int ix, int iy, int frame=0);
 		void Stretch(int x, int y, int w, int h, int frame = 0);
