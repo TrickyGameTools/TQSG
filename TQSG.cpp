@@ -562,7 +562,7 @@ namespace TrickyUnits {
 		SDL_SetTextureAlphaMod(Textures[frame], tcalpha);
 		for (int dy = tsy - iy; dy < tey; dy += imgh) {
 			//cout << "(" << x << "," << y << ")\tdy:" << dy << "; tsy:" << tsy << " imgh:" << imgh << " th:" << th << "\n";
-			 for (int dx = tsx - ix; dx < tex; dx += imgw) {
+			for (int dx = tsx - ix; dx < tex; dx += imgw) {
 				//cout << "\t\tDrawTile(" << dx << "," << dy << "," << imgw << "," << imgh << ")\n";
 				Target.x = dx;
 				Target.y = dy;
