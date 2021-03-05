@@ -18,6 +18,8 @@
 // 3. This notice may not be removed or altered from any source distribution.
 // EndLic
 
+#define TQSG_CopyTileDebug
+
 #include "TQSG.hpp"
 
 // TODO: Bundle support over JCR
@@ -312,6 +314,13 @@ namespace TrickyUnits {
 		TrueLoadJCR(J, entry);
 	}
 
+	void TQSG_Image::Create(unsigned int w, unsigned int h) {
+		Uint32 format = SDL_GetWindowPixelFormat(gWindow);
+		for (auto T : Textures) delete T;
+		Textures.clear();
+		Textures.push_back(SDL_CreateTexture(gRenderer, format, SDL_TEXTUREACCESS_STREAMING, w,h));
+	}
+
 	void TQSG_Image::Copy(TQSG_Image* Original) {
 		Uint32 format = SDL_GetWindowPixelFormat(gWindow);
 		//TQSG_Image ret;
@@ -434,6 +443,35 @@ namespace TrickyUnits {
 		}
 	}
 
+	void TQSG_Image::CopyTiled(TQSG_Image* Copy, int ix, int iy) {
+		int
+			sx{ 0 },
+			cx{ ix },
+			cy{ iy };
+		SDL_SetRenderTarget(gRenderer, Copy->Textures[0]);
+		SDL_RenderClear(gRenderer);
+		SDL_SetTextureBlendMode(Textures[0], BlendMode);
+		SDL_SetTextureAlphaMod(Textures[0], 255);
+		SDL_SetTextureColorMod(Textures[0], 255,255,255);
+		while (cx > 0) cx -= Width(); sx = cx;
+		while (cy > 0) cy -= Height();
+		while (cy < Copy->Height()) {
+			while (cx < Copy->Width()) {
+#ifdef TQSG_CopyTileDebug
+				std::cout << "\tTiling. Insert(" << ix << "," << iy << ")    Position(" << cx << "," << cy << ")   Area: " << Copy->Width() << "x" << Copy->Height() << endl;
+#endif
+				SDL_Rect Target{ cx,cy,Width(),Height() };
+				SDL_RenderCopy(gRenderer, Textures[0], NULL, &Target);
+				cx += Width();
+			}
+			cx = sx;
+			cy += Height();
+		}
+		SDL_SetRenderTarget(gRenderer, NULL);
+	}
+
+	
+
 	void TQSG_Image::XDraw(int x, int y, int frame) {
 		LastError = "";
 		if (frame < 0 || frame >= Textures.size()) {
@@ -514,23 +552,35 @@ namespace TrickyUnits {
 
 	
 
-	void TQSG_Image::Tile(int ax, int ay, int w, int h, int frame,int ix, int iy) {
-		auto x = ax + TQSG_OriginX;
-		auto y = ay + TQSG_OriginY;
+	void TQSG_Image::Tile(int ax, int ay, int w, int h, int frame,int aix, int aiy) {
+		auto
+			x = ax + TQSG_OriginX,
+			y = ay + TQSG_OriginY,
+			ix = aix,
+			iy = aiy;
+
 		LastError = "";
 		if (altframing) {
 			LastError = "Altframing NOT supported for tiling (and is not likely to be supported in the future, either!)";
 			return;
 		}
 		// todo: Fix issues with negative ix
+		/*???
+		if (iy>0)
+			iy = (y + (Height() - iy)) % Height();
+		if (ix > 0)
+			//ix = (x+ (Width() - ix)) % Width();
+			//ix = (x - (Width() + ix)) % Width();
+			ix = -(ix % Width());
+			//*/
 		if (ix < 0) {
 			//cout << "neg x:" << ix << " to ";
-			ix = (x-(Width() + ix))%Width();
+			ix = (x - (Width() + ix)) % Width();
 			//cout << ix << "\n";
-		}
+		} 
 		if (iy < 0) {
 			//cout << "neg x:" << ix << " to ";
-			iy = (y-(Height() + iy))%Height();
+			iy = (y - (Height() + iy)) % Height();
 			//cout << ix << "\n";
 		}
 		int ox, oy, ow, oh;
@@ -773,6 +823,10 @@ namespace TrickyUnits {
 		h = mode.h;
 	}
 
+	SDL_Window* TQSG_Window() {
+		return gWindow;
+	}
+
 	void TQSG_SetOrigin(int x, int y) {
 		TQSG_OriginX = x;
 		TQSG_OriginY = y;
@@ -930,7 +984,7 @@ namespace TrickyUnits {
 						printf("\a\x1b[33mWARNING!\x1b[0m\t Going into full screen was unsuccesful\n\n");
 					}
 				}
-				gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED);
+				gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
 				if (gRenderer == NULL)
 				{
 					printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
@@ -1375,6 +1429,7 @@ namespace TrickyUnits {
 	void TQSG_PureAutoImage::Stretch(int x, int y, int w, int h, int frame) { _img.StretchDraw(x, y, w, h, frame); }
 	void TQSG_PureAutoImage::Blit(int x, int y, int isx, int isy, int iex, int iey, int frame) { _img.Blit(x, y, isx, isy, iex, iey, frame); }
 	void TQSG_PureAutoImage::HotBottomRight() { _img.Hot(_img.Width(), _img.Height()); }
+	void TQSG_PureAutoImage::HotBottomCenter() { _img.Hot(floor(_img.Width()/2), _img.Height()); }
 
 	int TQSG_PureAutoImage::W() {
 		return _img.Width();
@@ -1390,6 +1445,13 @@ namespace TrickyUnits {
 
 	void TQSG_PureAutoImage::Negative() {
 		_img.Negative();
+	}
+
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_PureAutoImage::CopyTiled(unsigned int w, unsigned int h, int insertx, int inserty) {
+		auto ret{ std::make_shared<TQSG_PureAutoImage>() };
+		ret->Img()->Create(w, h);
+		Img()->CopyTiled(ret->Img(), insertx, inserty);
+		return ret;
 	}
 
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(std::string file) {

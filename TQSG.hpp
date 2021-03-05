@@ -86,6 +86,7 @@ namespace TrickyUnits {
 		void Create(std::string file);
 		void Create(jcr6::JT_Dir& JCR, std::string entry);
 		void Create(std::string mainfile, std::string entry);
+		void Create(unsigned int w, unsigned int h);
 
 		/// <summary>
 		/// Duplicates an image! Please note this is far from perfect and not to ention SLOOOOOW!
@@ -102,7 +103,7 @@ namespace TrickyUnits {
 		/// Draws an image with the basic settings. Please note, rotation and flipping settings are ignored.
 		/// </summary>
 		void Draw(int x, int y, int frame = 0);
-
+		void CopyTiled(TQSG_Image* Copy, int ix = 0, int iy = 0);
 		void XDraw(int x, int y, int frame = 0);
 
 		/// <summary>
@@ -243,6 +244,8 @@ namespace TrickyUnits {
 	int TQSG_DesktopHeight();
 	void TQSG_DesktopSize(int& w, int& h);
 
+	SDL_Window* TQSG_Window();
+
 	void TQSG_SetOrigin(int x, int y);
 	void TQSG_GetOrigin(int& x, int& y);
 
@@ -268,12 +271,14 @@ namespace TrickyUnits {
 		void Stretch(int x, int y, int w, int h, int frame = 0);
 		void Blit(int x, int y, int isx, int isy, int iex, int iey, int frame = 0);
 		void HotBottomRight();
+		void HotBottomCenter();
 		int W();
 		int H();
 		void Hot(int x, int y);
 		void HotCenter();
 		void HotGet(int& x, int& y);		
 		void Negative();
+		std::shared_ptr<TQSG_PureAutoImage> CopyTiled(unsigned int w, unsigned int h, int insertx=0, int inserty=0);
 	};
 
 	typedef std::shared_ptr<TQSG_PureAutoImage> TQSG_AutoImage;
