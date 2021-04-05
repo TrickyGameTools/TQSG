@@ -360,6 +360,7 @@ namespace TrickyUnits {
             switch (e.type) {
             case SDL_KEYDOWN: {
                 auto pkey = e.key.keysym.sym;
+                //std::cout << "KeyDown:" << (int)pkey << "\n"; // debug only
                 stKeyDown[pkey] = true;
                 stKeyHit[pkey] = stKeyDown[pkey] && (!stKeyOldDown[pkey]);
                 //printf("DOWN: %d\n",pkey);
@@ -396,6 +397,7 @@ namespace TrickyUnits {
     }
 
     bool TQSE_KeyHit(SDL_KeyCode c) {
+        //if (stKeyHit[c]) std::cout << "Keyhit:" << (int)c << "\n"; // debug only
         return stKeyHit[c];
     }
     bool TQSE_MouseReleased(int c) {
@@ -444,8 +446,10 @@ namespace TrickyUnits {
         case SDLK_BACKQUOTE:
             if (shift) return '`'; else return '~';
         case SDLK_UNDERSCORE:
+        case SDLK_MINUS:
             if (shift) return '_'; else return '-';
         case SDLK_PLUS:
+        case SDLK_EQUALS:
             if (shift) return '+'; else return '=';
         case SDLK_BACKSLASH:
             //if (shift) return '|'; else return '\\';
@@ -584,5 +588,16 @@ namespace TrickyUnits {
             return false;
             break;
         }
+    }
+
+    void TQSE_Flush() {
+        while (
+            TQSE_Quit() ||
+            TQSE_GetKey() ||
+            TQSE_MouseHit(1) ||
+            TQSE_MouseHit(2) ||
+            TQSE_MouseHit(3)
+            )
+            TQSE_Poll();
     }
 }

@@ -216,6 +216,7 @@ namespace TrickyUnits {
 	Uint8 TQSG_GetAlpha();
 
 	void TQSG_Rect(int x, int y, int w, int h, bool open = false);
+	void TQSG_Rect(SDL_Rect *r, bool open = false);
 	void TQSG_Circle(int x, int y, int radius);
 	void TQSG_Line(int x1, int y1, int x2, int y2);
 	void TQSG_ClsColor(int r, int g, int b);
@@ -240,6 +241,11 @@ namespace TrickyUnits {
 	double TQSG_RotateRAD();
 	double TQSG_RotateGRAD();
 
+	void TQSG_VP(int x, int y, int w, int h);
+	void TQSG_VP();
+	void TQSG_GetVP(int* x, int* y, int* w, int* h);
+
+
 	int TQSG_DesktopWidth();
 	int TQSG_DesktopHeight();
 	void TQSG_DesktopSize(int& w, int& h);
@@ -253,6 +259,8 @@ namespace TrickyUnits {
 
 	bool TQSG_Init(std::string WindowTitle, int WinWidth = 800, int WinHeight = 600, bool fullscreen = false);
 	void TQSG_Close();
+
+	
 
 	
 
@@ -278,6 +286,10 @@ namespace TrickyUnits {
 		void HotCenter();
 		void HotGet(int& x, int& y);		
 		void Negative();
+		void DrawVP(int x, int y,int frame=0);
+		void TileVP(int ix, int iy, int frame=0);
+		void TileVP(int x, int y, int w, int h, int frame = 0);
+		void TileVP(int x, int y, int w, int h, int ix, int iy, int frame = 0);
 		std::shared_ptr<TQSG_PureAutoImage> CopyTiled(unsigned int w, unsigned int h, int insertx=0, int inserty=0);
 	};
 
@@ -285,6 +297,7 @@ namespace TrickyUnits {
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(std::string file);
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(std::string jcrfile,std::string file);
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(jcr6::JT_Dir &jcrdir, std::string file);
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(jcr6::JT_Dir* jcrdir, std::string file);
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(int size, const char* buf);
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_GrabScreen();
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_Copy(TQSG_AutoImage Ori);

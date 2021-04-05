@@ -60,5 +60,7 @@ namespace TrickyUnits {
 	
 	bool TQSE_Yes(std::string question);
 
+	void TQSE_Flush();
+
 
 }

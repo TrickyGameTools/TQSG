@@ -1,4 +1,5 @@
 // Lic:
+// Lic:
 // TQSG.cpp
 // TQSG Code
 // version: 21.01.26
@@ -163,12 +164,14 @@ namespace TrickyUnits {
 		return out;
 	}
 
-
 	static void Ouwehoeren(std::string whatever) {
 #ifdef TQSG_Debug
 		printf("\x1b[32mTQSG DEBUG>\x1b[0m %s\n", whatever.c_str());
 #endif
 	}
+
+
+	static SDL_Rect _VP{ 0,0,0,0 };
 
 	string TError{ "No Error" };
 	TQSG_PanicType TQSG_Panic = NULL;
@@ -492,8 +495,8 @@ namespace TrickyUnits {
 		//*/
 		//*
 		SDL_Rect Target  {
-			(x-hotx)+TQSG_OriginX,
-			(y-hoty)+TQSG_OriginY,
+			(x-(hotx*scalex))+TQSG_OriginX,
+			(y-(hoty*scaley))+TQSG_OriginY,
 			(int)(Width()*scalex),
 			(int)(Height()*scaley)
 		};
@@ -884,6 +887,27 @@ namespace TrickyUnits {
 	double TQSG_RotateRAD() { return rotatedegrees * M_PI / 180; }
 	double TQSG_RotateGRAD() { return rotatedegrees * (200 / 180); }
 
+	
+	void TQSG_VP(int x, int y, int w, int h) {
+		_VP.x = x;
+		_VP.y = y;
+		_VP.w = w;
+		_VP.h = h;
+	}
+	void TQSG_VP() {
+		_VP.x = 0;
+		_VP.y = 0;
+		_VP.w = TQSG_ScreenWidth();
+		_VP.h = TQSG_ScreenHeight();
+	}
+
+	void TQSG_GetVP(int* x, int* y, int* w, int* h) {
+		*x = _VP.x;
+		*y = _VP.y;
+		*w = _VP.h;
+		*h = _VP.h;
+	}
+
 
 	void TQSG_Flip(int minticks) {
 		//SDL_UpdateWindowSurface(gWindow);
@@ -938,6 +962,15 @@ namespace TrickyUnits {
 			SDL_RenderDrawRect(gRenderer, &r);
 		else
 			SDL_RenderFillRect(gRenderer, &r);
+	}
+
+	void TQSG_Rect(SDL_Rect *r, bool open) {
+		SDL_SetRenderDrawBlendMode(gRenderer, BlendMode);
+		SDL_SetRenderDrawColor(gRenderer, tcr, tcg, tcb, tcalpha);
+		if (open)
+			SDL_RenderDrawRect(gRenderer, r);
+		else
+			SDL_RenderFillRect(gRenderer, r);
 	}
 
 	void TQSG_Circle(int x, int y, int radius) {
@@ -1447,6 +1480,80 @@ namespace TrickyUnits {
 		_img.Negative();
 	}
 
+	void TQSG_PureAutoImage::DrawVP(int x, int y,int frame) {
+		if (_VP.h <= 0 || _VP.w <= 0 || (x >= _VP.x && y >= _VP.y && x + W() <= _VP.x + _VP.w && y + H() <= _VP.y + _VP.h)) {
+			Draw(x, y);
+			return;
+		}
+		//TQSG_Rect(_VP.x, _VP.y, _VP.w, _VP.h); // debug
+		//cout << (x > _VP.x + _VP.w) << (y > _VP.y + _VP.h) << (x < _VP.x - W()) << (y < _VP.y - H()) << endl;
+		if (x > _VP.x + _VP.w || y > _VP.y + _VP.h || x < _VP.x - W() || y < _VP.y - H()) { return; }
+		int
+			px{ x },
+			py{ y },
+			bsx{ 0 },
+			bsy{ 0 },
+			bex{  W() },
+			bey{  H() };
+		if (x < _VP.x) {
+			px += (_VP.x - x);
+			bsx += (_VP.x - x);			
+		} 
+		if (y < _VP.y) {
+			py += (_VP.y - y);
+			bsy += (_VP.y - y);
+		}
+		if (bex - bsx > _VP.w) {
+			bex = _VP.w;		
+			if (x > _VP.x) bex = min(bex, bex - (x - _VP.x));
+		}
+		if (bey - bsy > _VP.h) {
+			bey = _VP.h;
+			if (y > _VP.y) bey = min(bey, bey - (y - _VP.y));
+		}
+		if (x > _VP.x && (x - _VP.x) + W() > _VP.w) {			
+			int ex{ _VP.x + _VP.w };
+			bex =  ex-x;
+		}
+		if (y > _VP.y && (y - _VP.y) + H() > _VP.h) {
+			int ey{ _VP.y + _VP.h };
+			bey = ey - y;
+		}
+
+				
+		Blit(px, py, bsx, bsy, bex, bey,frame);
+
+	}
+
+	void TQSG_PureAutoImage::TileVP(int ix, int iy, int frame) {
+		int sx = _VP.x-ix;
+		int sy = _VP.y - iy;
+		if (W() == 0 || H() == 0) return;
+		while (sx > _VP.x) sx -= W();
+		while (sy > _VP.y) sy -= H();
+		for (int fy = sy; fy < _VP.y + _VP.h; fy += H()) {
+			for (int fx = sx; fx < _VP.x + _VP.w; fx += W()) {
+				//cout << "TileVP(" << fx << "," << fy << ")\n";
+				DrawVP(fx, fy);
+				//TQSG_Rect(fx, fy, W(), H(), true); // DEBUG
+			}
+		}
+		//TQSG_Rect(_VP.x, _VP.y, _VP.w, _VP.h,true); // DEBUG ONLY
+
+	}
+
+	void TQSG_PureAutoImage::TileVP(int x, int y, int w, int h, int frame) {
+		TileVP(x, y, w, h, 0, 0, frame);
+	}
+
+	void TQSG_PureAutoImage::TileVP(int x, int y, int w, int h, int ix, int iy, int frame) {
+		int vx, vy, vw, vh;
+		TQSG_GetVP(&vx, &vy, &vw, &vh);
+		TQSG_VP(x, y, w, h);
+		TileVP(ix, iy);
+		TQSG_VP(vx, vy, vw, vh);
+	}
+
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_PureAutoImage::CopyTiled(unsigned int w, unsigned int h, int insertx, int inserty) {
 		auto ret{ std::make_shared<TQSG_PureAutoImage>() };
 		ret->Img()->Create(w, h);
@@ -1467,11 +1574,15 @@ namespace TrickyUnits {
 	}
 
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(jcr6::JT_Dir& jcrdir, std::string file) {
+		return TQSG_LoadAutoImage(&jcrdir, file);
+	}
+
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(jcr6::JT_Dir* jcrdir, std::string file) {
 		auto ret{ std::make_shared<TQSG_PureAutoImage>() };
-		auto hot = StripExt(file)+".hot";
-		ret->Img()->Create(jcrdir, file);
-		if (jcrdir.EntryExists(hot)) {
-			auto hotstring = Trim(jcrdir.String(hot)); hotstring = TReplace(hotstring, ':', ',');
+		auto hot = StripExt(file) + ".hot";
+		ret->Img()->Create(*jcrdir, file);
+		if (jcrdir->EntryExists(hot)) {
+			auto hotstring = Trim(jcrdir->String(hot)); hotstring = TReplace(hotstring, ':', ',');
 			auto hd = Split(hotstring, ',');
 			if (hd.size() == 4) {
 				if (hd[0] == "@RHOT" && hd[3] == "@END") {
@@ -1483,8 +1594,7 @@ namespace TrickyUnits {
 				} else {
 					cout << "\7\x1b[31mERROR! ERROR!\x1b[0m\tInvalid hot file: " << hot << endl << "= RHOT file expected, but that is not what this looks like " << endl << "= Datastring:" << hotstring << endl;
 				}
-			}
-			else if (hd.size() != 2) cout << "\7\x1b[31mERROR! ERROR!\x1b[0m\tInvalid hot file: " << hot << endl << "= Expcted 2 parameters from hot but I got " << hd.size() << endl << "= Datastring:" << hotstring << endl;
+			} else if (hd.size() != 2) cout << "\7\x1b[31mERROR! ERROR!\x1b[0m\tInvalid hot file: " << hot << endl << "= Expcted 2 parameters from hot but I got " << hd.size() << endl << "= Datastring:" << hotstring << endl;
 			else {
 				auto
 					x = ToInt(hd[0]),
