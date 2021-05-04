@@ -293,6 +293,9 @@ namespace TrickyUnits {
 		std::shared_ptr<TQSG_PureAutoImage> CopyTiled(unsigned int w, unsigned int h, int insertx=0, int inserty=0);
 	};
 
+	/// <summary>
+	/// Type for storing images. The "Auto" denotes that the image is disposed automatically when there are no more variables pointing to it.
+	/// </summary>
 	typedef std::shared_ptr<TQSG_PureAutoImage> TQSG_AutoImage;
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(std::string file);
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(std::string jcrfile,std::string file);
@@ -324,4 +327,78 @@ namespace TrickyUnits {
 	TQSG_AutoImageFont TQSG_LoadAutoImageFont(jcr6::JT_Dir* jcrdir, std::string File);
 
 	
+	class TQSG_True_AS_Screen;
+	typedef std::shared_ptr<TQSG_True_AS_Screen> TQSG_ASScreen;
+	class TQSG_True_AS_Screen {
+	private:
+		double
+			_AutoScaleX{ 1 },
+			_AutoScaleY{ 1 },
+			_ScaleX{ 1 },
+			_ScaleY{ 1 };
+
+		unsigned int
+			_Width{ 0 },
+			_Height{ 0 },
+			_VPX{ 0 },
+			_VPY{ 0 },
+			_VPW{ 0 },
+			_VPH{ 0 };
+		void Recalc();
+	public:
+
+		int RCX(int x);
+		int RCY(int y);
+
+		/// <summary>
+		/// Set Viewport to full
+		/// </summary>
+		void ViewPort();
+		/// <summary>
+		/// Set ViewPort
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="w"></param>
+		/// <param name="h"></param>
+		void ViewPort(unsigned int x, unsigned int y, unsigned int w, unsigned int h);
+
+		/// <summary>
+		/// Set Viewport
+		/// </summary>
+		/// <param name="Rect">Rectangle in SDL format</param>
+		void ViewPort(SDL_Rect Rect);
+
+		/// <summary>
+		/// Creates new Alternate Size Screen
+		/// </summary>
+		/// <param name="w">Width</param>
+		/// <param name="h">Height</param>
+		/// <returns></returns>
+		static TQSG_ASScreen Create(unsigned int w, unsigned int h);
+
+		/// <summary>
+		/// Simplistic Draw comment. Please note, viewports and rotation are not taken into account here.
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="frame"></param>
+		void Draw(TQSG_AutoImage img,int x, int y, int frame = 0);
+
+		/// <summary>
+		/// Gets the viewport and assing all settings to the variables
+		/// </summary>
+		/// <param name="x">x</param>
+		/// <param name="y">y</param>
+		/// <param name="w">width</param>
+		/// <param name="h">height</param>
+		void GetViewPort(int* x, int* y, int* w, int* h);
+
+		/// <summary>
+		/// Gets viewport and returns it as an SDL_Rect
+		/// </summary>
+		/// <returns>Rect with the viewport values</returns>
+		SDL_Rect GetViewPort();
+	};
+
 }

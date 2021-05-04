@@ -476,6 +476,9 @@ namespace TrickyUnits {
 	
 
 	void TQSG_Image::XDraw(int x, int y, int frame) {
+		int limgflip{ SDL_FLIP_NONE };
+		auto _scalex{ scalex };
+		auto _scaley{ scaley };
 		LastError = "";
 		if (frame < 0 || frame >= Textures.size()) {
 			char FE[400];
@@ -484,21 +487,29 @@ namespace TrickyUnits {
 			_Panic(FE);
 			return;
 		}
+		if (_scalex < 0) {
+			_scalex = abs(_scalex);
+			limgflip |= SDL_FLIP_HORIZONTAL;
+		}
+		if (_scaley < 0) {
+			_scaley = abs(_scaley);
+			limgflip |= SDL_FLIP_VERTICAL;
+		}
 		//printf("DEBUG! B.Color(%3d, %3d, %3d) \n", tcr, tcg, tcb);
 		//printf("DEBUG! A.Color(%3d, %3d, %3d) \n", tcr, tcg, tcb);
 		/*
 		SDL_Rect Target;
-		Target.x = (x -(int)ceil(hotx * scalex))+TQSG_OriginX;
-		Target.y = (y -(int)ceil(hoty * scaley))+TQSG_OriginY;
-		Target.w = (int)ceil(Width() * scalex);
-		Target.h = (int)ceil(Height() * scaley);
+		Target.x = (x -(int)ceil(hotx * _scalex))+TQSG_OriginX;
+		Target.y = (y -(int)ceil(hoty * _scaley))+TQSG_OriginY;
+		Target.w = (int)ceil(Width() * _scalex);
+		Target.h = (int)ceil(Height() * _scaley);
 		//*/
 		//*
 		SDL_Rect Target  {
-			(x-(hotx*scalex))+TQSG_OriginX,
-			(y-(hoty*scaley))+TQSG_OriginY,
-			(int)(Width()*scalex),
-			(int)(Height()*scaley)
+			(x-(hotx*_scalex))+TQSG_OriginX,
+			(y-(hoty*_scaley))+TQSG_OriginY,
+			(int)(Width()*_scalex),
+			(int)(Height()*_scaley)
 		};
 		
 		//*/
@@ -508,19 +519,19 @@ namespace TrickyUnits {
 		cpoint.x = hotx;
 		cpoint.y = hoty;
 		*/
-		SDL_Point cpoint{ (int)(hotx * scalex),(int)(hoty * scaley) };
+		SDL_Point cpoint{ (int)(hotx * _scalex),(int)(hoty * _scaley) };
 		
 		//SDL_RenderCopy(gRenderer, Textures[frame], NULL, &Target);
 		if (altframing) {
 			SDL_SetTextureBlendMode(Textures[0], BlendMode);
 			SDL_SetTextureAlphaMod(Textures[0], tcalpha);
 			SDL_SetTextureColorMod(Textures[0], tcr, tcg, tcb);
-			SDL_RenderCopyEx(gRenderer, Textures[0], &AltFrames[frame], &Target, rotatedegrees, &cpoint, imgflip);
+			SDL_RenderCopyEx(gRenderer, Textures[0], &AltFrames[frame], &Target, rotatedegrees, &cpoint, (SDL_RendererFlip)limgflip);
 		} else {
 			SDL_SetTextureBlendMode(Textures[frame], BlendMode);
 			SDL_SetTextureAlphaMod(Textures[frame], tcalpha);
 			SDL_SetTextureColorMod(Textures[frame], tcr, tcg, tcb);
-			SDL_RenderCopyEx(gRenderer, Textures[frame], NULL, &Target, rotatedegrees, &cpoint, imgflip);
+			SDL_RenderCopyEx(gRenderer, Textures[frame], NULL, &Target, rotatedegrees, &cpoint, (SDL_RendererFlip)limgflip);
 		}
 
 	}
@@ -1480,8 +1491,13 @@ namespace TrickyUnits {
 		_img.Negative();
 	}
 
-	void TQSG_PureAutoImage::DrawVP(int x, int y,int frame) {
-		if (_VP.h <= 0 || _VP.w <= 0 || (x >= _VP.x && y >= _VP.y && x + W() <= _VP.x + _VP.w && y + H() <= _VP.y + _VP.h)) {
+	void TQSG_PureAutoImage::DrawVP(int x, int y, int frame) {
+		if (_VP.h <= 0 || _VP.w <= 0 || (
+			x >= _VP.x && 
+			y >= _VP.y && 
+			x + W() <= _VP.x + _VP.w && 
+			y + H() <= _VP.y + _VP.h)) 
+		{
 			Draw(x, y);
 			return;
 		}
@@ -1493,40 +1509,37 @@ namespace TrickyUnits {
 			py{ y },
 			bsx{ 0 },
 			bsy{ 0 },
-			bex{  W() },
-			bey{  H() };
+			bex{ W() },
+			bey{ H() };
 		if (x < _VP.x) {
 			px += (_VP.x - x);
-			bsx += (_VP.x - x);			
-		} 
+			bsx += (_VP.x - x);
+		}
 		if (y < _VP.y) {
 			py += (_VP.y - y);
 			bsy += (_VP.y - y);
 		}
 		if (bex - bsx > _VP.w) {
-			bex = _VP.w;		
+			bex = _VP.w;
 			if (x > _VP.x) bex = min(bex, bex - (x - _VP.x));
 		}
 		if (bey - bsy > _VP.h) {
 			bey = _VP.h;
 			if (y > _VP.y) bey = min(bey, bey - (y - _VP.y));
 		}
-		if (x > _VP.x && (x - _VP.x) + W() > _VP.w) {			
+		if (x > _VP.x && (x - _VP.x) + W() > _VP.w) {
 			int ex{ _VP.x + _VP.w };
-			bex =  ex-x;
+			bex = ex - x;
 		}
 		if (y > _VP.y && (y - _VP.y) + H() > _VP.h) {
 			int ey{ _VP.y + _VP.h };
 			bey = ey - y;
 		}
-
-				
-		Blit(px, py, bsx, bsy, bex, bey,frame);
-
+		Blit(px, py, bsx, bsy, bex, bey, frame);
 	}
 
 	void TQSG_PureAutoImage::TileVP(int ix, int iy, int frame) {
-		int sx = _VP.x-ix;
+		int sx = _VP.x - ix;
 		int sy = _VP.y - iy;
 		if (W() == 0 || H() == 0) return;
 		while (sx > _VP.x) sx -= W();
@@ -1539,7 +1552,6 @@ namespace TrickyUnits {
 			}
 		}
 		//TQSG_Rect(_VP.x, _VP.y, _VP.w, _VP.h,true); // DEBUG ONLY
-
 	}
 
 	void TQSG_PureAutoImage::TileVP(int x, int y, int w, int h, int frame) {
@@ -1674,5 +1686,56 @@ namespace TrickyUnits {
 		_fnt.Kill();
 	}
 
+#pragma region Alternate Scale
 
+
+	void TQSG_True_AS_Screen::Recalc() {
+		_AutoScaleX = TQSG_ScreenHeight() / (double)_Width;
+		_AutoScaleY = TQSG_ScreenHeight() / (double)_Height;
+		ViewPort();
+	}
+
+	int TQSG_True_AS_Screen::RCX(int x) {
+		return floor(_AutoScaleX*x);
+	}
+
+	int TQSG_True_AS_Screen::RCY(int y) {
+		return floor(_AutoScaleY * y);
+	}
+
+
+	void TQSG_True_AS_Screen::ViewPort() { ViewPort(0, 0, _Width, _Height); }
+
+	void TQSG_True_AS_Screen::ViewPort(unsigned int x, unsigned int y, unsigned int w, unsigned int h) {
+		_VPX = x;
+		_VPY = y;
+		_VPW = w;
+		_VPH = h;
+	}
+
+	void TQSG_True_AS_Screen::ViewPort(SDL_Rect Rect) { ViewPort(Rect.x, Rect.y, Rect.w, Rect.h); }
+
+	TQSG_ASScreen TQSG_True_AS_Screen::Create(unsigned int w, unsigned int h) {
+		auto ret = make_shared<TQSG_True_AS_Screen>();
+		ret->_Width = w;
+		ret->_Height = h;
+		ret->Recalc();
+		return ret;
+	}
+
+	void TQSG_True_AS_Screen::Draw(TQSG_AutoImage img,int x, int y, int frame) {
+		SetScale(_AutoScaleX * _ScaleX, _AutoScaleY * _ScaleY);
+		img->Draw(RCX(x), RCY(y), frame);
+	}
+	void TQSG_True_AS_Screen::GetViewPort(int* x, int* y, int* w, int* h) {
+		*x = _VPX;
+		*y = _VPY;
+		*w = _VPW;
+		*h = _VPH;
+	}
+	SDL_Rect TQSG_True_AS_Screen::GetViewPort() {
+		SDL_Rect Rect{ (int)_VPX,(int)_VPH,(int)_VPW,(int)_VPH };
+		return Rect;
+	}
+#pragma endregion
 }
