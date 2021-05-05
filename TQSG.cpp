@@ -1498,7 +1498,7 @@ namespace TrickyUnits {
 			x + W() <= _VP.x + _VP.w && 
 			y + H() <= _VP.y + _VP.h)) 
 		{
-			Draw(x, y);
+			Draw(x, y,frame);
 			return;
 		}
 		//TQSG_Rect(_VP.x, _VP.y, _VP.w, _VP.h); // debug
@@ -1547,7 +1547,7 @@ namespace TrickyUnits {
 		for (int fy = sy; fy < _VP.y + _VP.h; fy += H()) {
 			for (int fx = sx; fx < _VP.x + _VP.w; fx += W()) {
 				//cout << "TileVP(" << fx << "," << fy << ")\n";
-				DrawVP(fx, fy);
+				DrawVP(fx, fy,frame);
 				//TQSG_Rect(fx, fy, W(), H(), true); // DEBUG
 			}
 		}
@@ -1562,7 +1562,7 @@ namespace TrickyUnits {
 		int vx, vy, vw, vh;
 		TQSG_GetVP(&vx, &vy, &vw, &vh);
 		TQSG_VP(x, y, w, h);
-		TileVP(ix, iy);
+		TileVP(ix, iy,frame);
 		TQSG_VP(vx, vy, vw, vh);
 	}
 
