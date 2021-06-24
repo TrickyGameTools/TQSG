@@ -27,7 +27,7 @@
 
 // TQSG
 #include "TQSG.hpp"
-#include "TQSG_BlopPlasmaBlop.h"
+#include "TQSG_BlopPlasmaBlop.hpp"
 #include "TQSG_BlopPlasma.hpp"
 
 
