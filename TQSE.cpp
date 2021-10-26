@@ -32,7 +32,9 @@
 #undef TQSE_Key_Init_Verslag
 
 
-namespace TrickyUnits {    
+namespace TrickyUnits {
+
+    std::string TQSE_AppTitle = "TQSE Based Application";
 
     static const int maxmousebuttons = 16;
 
@@ -74,7 +76,7 @@ namespace TrickyUnits {
         }
     }
 
-    static void MouseClean(bool full=false) {
+    static void MouseClean(bool full = false) {
         for (unsigned int i = 0; i < maxmousebuttons; i++) {
             if (full) MsButOldDown[i] = false; else MsButOldDown[i] = MsButDown[i];
             MsButDown[i] = false;
@@ -517,7 +519,7 @@ namespace TrickyUnits {
 
     bool TQSE_MouseDown(int code) {
         if (code < 0 || code >= maxmousebuttons) return false;
-        return MsButDown[code];        
+        return MsButDown[code];
     }
 
     bool TQSE_MouseHit(int code) {
@@ -526,7 +528,7 @@ namespace TrickyUnits {
     }
 
     int TQSE_KeyByName(std::string name) {
-        return SDL_GetKeyFromName(name.c_str());        
+        return SDL_GetKeyFromName(name.c_str());
     }
 
     void TQSE_ShowKeyNames() {
@@ -589,6 +591,50 @@ namespace TrickyUnits {
             break;
         }
     }
+
+    void TQSE_Notify(std::string message) {
+        const SDL_MessageBoxButtonData buttons[] = {
+            //{ /* .flags, .buttonid, .text */        0, 0, "no" },
+            //{ SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "yes" },
+            //{ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "cancel" },
+                {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT,1,"Ok"}
+        };
+        const SDL_MessageBoxColorScheme colorScheme = {
+            { /* .colors (.r, .g, .b) */
+                /* [SDL_MESSAGEBOX_COLOR_BACKGROUND] */
+                { 0,   0,   0 },
+                /* [SDL_MESSAGEBOX_COLOR_TEXT] */
+                {   255, 180,   0 },
+                /* [SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] */
+                { 255, 255,   0 },
+                /* [SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] */
+                {   0,   0, 0 },
+                /* [SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] */
+                { 255,   2550, 0 }
+            }
+        };
+        const SDL_MessageBoxData messageboxdata = {
+            SDL_MESSAGEBOX_INFORMATION, /* .flags */
+            NULL, /* .window */
+            TQSE_AppTitle.c_str(), /* .title */
+            message.c_str(), /* .message */
+            SDL_arraysize(buttons), /* .numbuttons */
+            buttons, /* .buttons */
+            &colorScheme /* .colorScheme */
+        };
+        int buttonid;
+        if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0) {
+            SDL_Log("error displaying message box");
+            return;
+        }
+        if (buttonid == -1) {
+            SDL_Log("no selection");
+        } else {
+            SDL_Log("selection was %s", buttons[buttonid].text);
+        }
+        return;
+    }
+
 
     void TQSE_Flush() {
         while (

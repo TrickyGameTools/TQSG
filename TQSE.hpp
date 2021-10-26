@@ -27,6 +27,8 @@
 namespace TrickyUnits {
 
 	typedef void (*EventFunction) (SDL_Event* Event);
+
+	extern std::string TQSE_AppTitle;
 		
 
 	/// <summary>Sets the startup data for TQSE. Please note unloading is not required as no pointers are used or memory is being allocated. This routine is only to make sure that all start values are correct!</summary>
@@ -59,6 +61,7 @@ namespace TrickyUnits {
 	bool TQSE_MouseReleased(int c);
 	
 	bool TQSE_Yes(std::string question);
+	void TQSE_Notify(std::string message);
 
 	void TQSE_Flush();
 
