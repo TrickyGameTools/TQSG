@@ -1,7 +1,7 @@
 // Lic:
 // TQSG.hpp
 // TQSG Header
-// version: 21.01.26
+// version: 21.10.26
 // Copyright (C) 2020, 2021 Jeroen P. Broks
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
