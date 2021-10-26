@@ -38,6 +38,7 @@
 #include <QuickStream.hpp>
 #include <QuickString.hpp>
 #include <TrickySTOI.hpp>
+#include <TrickyMath.hpp>
 
 // JCR6
 #include <jcr6_core.hpp>
@@ -769,6 +770,12 @@ namespace TrickyUnits {
 		if (AutoClean) KillAll();
 	}
 
+	std::vector<SDL_Texture*> TQSG_Image::GetTextures() {
+		return Textures;
+	}
+
+	bool TQSG_Image::AllowAltFraming() { return altframing; }
+
 
 	void SetScale(double x, double y) {
 		scalex = x;
@@ -1324,6 +1331,7 @@ namespace TrickyUnits {
 		if (Letter.count(base) == 0 || Letter[base].count(ch) == 0) return;
 		if (Letter[base][ch] == NULL) return;
 		SDL_SetTextureColorMod(Letter[base][ch], tcr, tcg, tcb);
+		SDL_SetTextureAlphaMod(Letter[base][ch], tcalpha);
 		//printf("DEBUG! A.Color(%3d, %3d, %3d) \n", tcr, tcg, tcb);
 		int w, h;
 		SDL_QueryTexture(Letter[base][ch], NULL, NULL, &w, &h);
@@ -1483,6 +1491,10 @@ namespace TrickyUnits {
 		return _img.Height();
 	}
 
+	int TQSG_PureAutoImage::Frames() {
+		return _img.Frames();
+	}
+
 	void TQSG_PureAutoImage::Hot(int x, int y) { _img.Hot(x, y); }
 
 	void TQSG_PureAutoImage::HotGet(int& x, int& y) { _img.HotGet(x, y); }
@@ -1521,11 +1533,11 @@ namespace TrickyUnits {
 		}
 		if (bex - bsx > _VP.w) {
 			bex = _VP.w;
-			if (x > _VP.x) bex = min(bex, bex - (x - _VP.x));
+			if (x > _VP.x) bex = std::min(bex, bex - (x - _VP.x));
 		}
 		if (bey - bsy > _VP.h) {
 			bey = _VP.h;
-			if (y > _VP.y) bey = min(bey, bey - (y - _VP.y));
+			if (y > _VP.y) bey = std::min(bey, bey - (y - _VP.y));
 		}
 		if (x > _VP.x && (x - _VP.x) + W() > _VP.w) {
 			int ex{ _VP.x + _VP.w };
@@ -1669,6 +1681,7 @@ namespace TrickyUnits {
 		return ret;
 	}
 
+
 	TQSG_ImageFont* TQSG_PureAutoImageFont::Font() { return &_fnt; }
 
 	void TQSG_PureAutoImageFont::Draw(std::string txt, int x, int y, unsigned char ha, unsigned char va) { _fnt.Draw(txt, x, y, ha, va); }
@@ -1690,7 +1703,7 @@ namespace TrickyUnits {
 
 
 	void TQSG_True_AS_Screen::Recalc() {
-		_AutoScaleX = TQSG_ScreenHeight() / (double)_Width;
+		_AutoScaleX = TQSG_ScreenWidth() / (double)_Width;
 		_AutoScaleY = TQSG_ScreenHeight() / (double)_Height;
 		ViewPort();
 	}
@@ -1701,6 +1714,14 @@ namespace TrickyUnits {
 
 	int TQSG_True_AS_Screen::RCY(int y) {
 		return floor(_AutoScaleY * y);
+	}
+
+	int TQSG_True_AS_Screen::RCW(int w) {
+		return ceil(_AutoScaleX * w);
+	}
+
+	int TQSG_True_AS_Screen::RCH(int h) {
+		return ceil(_AutoScaleY * h);
 	}
 
 
@@ -1727,6 +1748,36 @@ namespace TrickyUnits {
 		SetScale(_AutoScaleX * _ScaleX, _AutoScaleY * _ScaleY);
 		img->Draw(RCX(x), RCY(y), frame);
 	}
+
+	void TQSG_True_AS_Screen::XDraw(TQSG_AutoImage img, int x, int y, int frame) {
+		SetScale(_AutoScaleX * _ScaleX, _AutoScaleY * _ScaleY);
+		img->XDraw(RCX(x), RCY(y), frame);
+	}
+
+	void TQSG_True_AS_Screen::Stretch(TQSG_AutoImage img, int x, int y, int w, int h, int frame) {
+		img->Stretch(RCX(x), RCY(y), RCW(w), RCH(h));
+	}
+	void TQSG_True_AS_Screen::Plot(int x, int y, bool thin, bool center) {
+		if (!thin) {
+			TQSG_Rect(RCX(x), RCY(y), ceil(_AutoScaleX), ceil(_AutoScaleY));
+			return;
+		}
+		if (center) {
+			x += floor(_AutoScaleX / 2);
+			y += floor(_AutoScaleY / 2);
+		}
+		TQSG_Plot(x, y);
+	}
+
+	void TQSG_True_AS_Screen::Rect(int x, int y, int w, int h) {
+		TQSG_Rect(
+			RCX(x),
+			RCY(y),
+			RCW(w),
+			RCH(h)
+		);
+	}
+
 	void TQSG_True_AS_Screen::GetViewPort(int* x, int* y, int* w, int* h) {
 		*x = _VPX;
 		*y = _VPY;
@@ -1734,8 +1785,156 @@ namespace TrickyUnits {
 		*h = _VPH;
 	}
 	SDL_Rect TQSG_True_AS_Screen::GetViewPort() {
-		SDL_Rect Rect{ (int)_VPX,(int)_VPH,(int)_VPW,(int)_VPH };
+		SDL_Rect Rect{ (int)_VPX,(int)_VPY,(int)_VPW,(int)_VPH };
 		return Rect;
 	}
+
+	void TQSG_True_AS_Screen::DrawVP(TQSG_AutoImage img, int x, int y, int frame) {
+		// No I could NOT do this by just a quick reference. 
+		if (_VPH <= 0 || _VPW <= 0 || (
+			x >= _VPX &&
+			y >= _VPY &&
+			x + img->W() <= _VPX + _VPW &&
+			y + img->H() <= _VPY + _VPH)) {
+			Draw(img, x, y, frame);
+			return;
+		}
+		//TQSG_Rect(_VPX, _VPY, _VPW, _VPH); // debug
+		//cout << (x > _VPX + _VPW) << (y > _VPY + _VPH) << (x < _VPX - W()) << (y < _VPY - H()) << endl;
+		if (x > _VPX + _VPW || y > _VPY + _VPH || x < _VPX - img->W() || y < _VPY - img->H()) { return; }
+		int
+			px{ x },
+			py{ y },
+			bsx{ 0 },
+			bsy{ 0 },
+			bex{ img->W() },
+			bey{ img->H() };
+		if (x < _VPX) {
+			px += (_VPX - x);
+			bsx += (_VPX - x);
+		}
+		if (y < _VPY) {
+			py += (_VPY - y);
+			bsy += (_VPY - y);
+		}
+		if (bex - bsx > _VPW) {
+			bex = _VPW;
+			if (x > _VPX) bex = QMIN(bex, bex - (x - _VPX));
+		}
+		if (bey - bsy > _VPH) {
+			bey = _VPH;
+			if (y > _VPY) bey = QMIN(bey, bey - (y - _VPY));
+		}
+		if (x > _VPX && (x - _VPX) + img->W() > _VPW) {
+			//unsigned int ex{ _VPX + _VPW };
+			int ex{(int)( _VPX + _VPW) };
+			bex = ex - x;
+		}
+		if (y > _VPY && (y - _VPY) + img->H() > _VPH) {
+			//unsigned int ey{ _VPY + _VPH };
+			int ey{ (int)(_VPY + _VPH) };
+			bey = ey - y;
+		}
+		Blit(img, px, py, bsx, bsy, bex, bey, frame);
+	}
+
+	void TQSG_True_AS_Screen::Blit(TQSG_AutoImage img, int x, int y, int isx, int isy, int iex, int iey, int frame) {
+		int
+			imgh = img->H(),
+			imgw = img->W();
+		SDL_Rect
+			Target,
+			Source;
+		auto
+			Textures{img->Img()->GetTextures()};	
+		if (img->Img()->AllowAltFraming()) {
+			LastError = "Altframing NOT supported for Blitting (and is not likely to be supported in the future, either!)";
+			return;
+		}		
+		Source.x = max(isx, 0);
+		Source.y = max(isy, 0);
+		Source.w = min(iex, imgw - isx);
+		Source.h = min(iey, imgh - isy);		
+		if (Source.w < 1 || Source.h < 1) { LastError = "Blit format error"; return; }
+		/*
+		Target.x = x;
+		Target.y = y;
+		Target.w = Source.w * scalex;
+		Target.h = Source.h * scaley;
+		//*/
+		//*
+		Target.x = RCX(x);
+		Target.y = RCY(y);
+		Target.w = RCW(Source.w * scalex);
+		Target.h = RCH(Source.h * scaley);
+		//*/
+		AlterRect(&Target);
+		SDL_SetTextureColorMod(Textures[frame], tcr, tcg, tcb);
+		SDL_SetTextureBlendMode(Textures[frame], BlendMode);
+		SDL_SetTextureAlphaMod(Textures[frame], tcalpha);
+		SDL_RenderCopy(gRenderer, Textures[frame], &Source, &Target);
+	}
+
+	void TQSG_True_AS_Screen::Tile(TQSG_AutoImage img, int ix, int iy, int frame) {
+		int
+			sx = _VPX - ix,
+			sy = _VPY - iy,
+			ex = _VPX + _VPW,
+			ey = _VPY + _VPH,
+			W = img->W(),
+			H = img->H();
+		if (W <= 0 || H <= 0) return;
+		while (sx > _VP.x) sx -= W;
+		while (sy > _VP.y) sy -= H;
+		for (int fy = sy; fy < ey; fy += H) {
+			for (int fx = sx; fx < ex; fx += W) {
+				DrawVP(img, fx, fy, frame);
+			}
+		}
+	}
+
+	void TQSG_True_AS_Screen::Tile(TQSG_AutoImage img, int x, int y, int w, int h, int ix, int iy, int frame) {
+		int vx, vy, vw, vh;
+		GetViewPort(&vx, &vy, &vw, &vh);
+		ViewPort(x, y, w, h);
+		Tile(img, ix, iy, frame);
+		ViewPort(vx, vy, vw, vh);
+	}
+
+	void TQSG_True_AS_Screen::Tile(TQSG_AutoImage img, int x, int y, int w, int h, int frame) { Tile(img, x, y, w, h, 0, 0, frame); }
+
+	void TQSG_True_AS_Screen::Scale(double w, double h) {
+		_ScaleX = w;
+		_ScaleY = h;
+	}
+
+	void TQSG_True_AS_Screen::GetAutoScale(double* w, double* h) {
+		*w = _AutoScaleX;
+		*h = _AutoScaleY;
+	}
+
+	void TQSG_True_AS_Screen::AlterRect(SDL_Rect* R) {
+		R->x = RCX(R->x);
+		R->y = RCX(R->y);
+		R->w = RCX(R->w);
+		R->h = RCX(R->h);		
+	}
+
+	SDL_Rect TQSG_True_AS_Screen::AlterRect(SDL_Rect R) {
+		SDL_Rect ret;
+		ret.x = RCX(ret.x);
+		ret.y = RCX(ret.y);
+		ret.w = RCX(ret.w);
+		ret.h = RCX(ret.h);
+		return ret;
+	}
+
+	int TQSG_True_AS_Screen::Width() { return _Width; }
+	int TQSG_True_AS_Screen::Height() { return _Height; }
+
+	TQSG_ASScreen TQSG_CreateAS(unsigned int x, unsigned int y) {
+		return TQSG_True_AS_Screen::Create(x, y);
+	}
+
 #pragma endregion
 }

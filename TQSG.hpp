@@ -142,10 +142,11 @@ namespace TrickyUnits {
 		void HotCenter();
 		void HotBottomCenter();
 		void HotGet(int& x, int& y);
+
+		std::vector<SDL_Texture*> GetTextures();
+		bool AllowAltFraming();
+
 		~TQSG_Image();
-
-
-
 	};
 
 #ifdef TQSG_AllowTTF
@@ -216,7 +217,7 @@ namespace TrickyUnits {
 	Uint8 TQSG_GetAlpha();
 
 	void TQSG_Rect(int x, int y, int w, int h, bool open = false);
-	void TQSG_Rect(SDL_Rect *r, bool open = false);
+	void TQSG_Rect(SDL_Rect* r, bool open = false);
 	void TQSG_Circle(int x, int y, int radius);
 	void TQSG_Line(int x1, int y1, int x2, int y2);
 	void TQSG_ClsColor(int r, int g, int b);
@@ -260,9 +261,9 @@ namespace TrickyUnits {
 	bool TQSG_Init(std::string WindowTitle, int WinWidth = 800, int WinHeight = 600, bool fullscreen = false);
 	void TQSG_Close();
 
-	
 
-	
+
+
 
 
 	// Don't EVER use this directly, but always use with a shared pointer in stead. Safer that way!
@@ -275,22 +276,23 @@ namespace TrickyUnits {
 		void Draw(int x, int y, int frame = 0);
 		void XDraw(int x, int y, int frame = 0);
 		void Tile(int x, int y, int w, int h, int frame = 0);
-		void Tile(int x, int y, int w, int h, int ix, int iy, int frame=0);
+		void Tile(int x, int y, int w, int h, int ix, int iy, int frame = 0);
 		void Stretch(int x, int y, int w, int h, int frame = 0);
 		void Blit(int x, int y, int isx, int isy, int iex, int iey, int frame = 0);
 		void HotBottomRight();
 		void HotBottomCenter();
 		int W();
 		int H();
+		int Frames();
 		void Hot(int x, int y);
 		void HotCenter();
-		void HotGet(int& x, int& y);		
+		void HotGet(int& x, int& y);
 		void Negative();
-		void DrawVP(int x, int y,int frame=0);
-		void TileVP(int ix, int iy, int frame=0);
+		void DrawVP(int x, int y, int frame = 0);
+		void TileVP(int ix, int iy, int frame = 0);
 		void TileVP(int x, int y, int w, int h, int frame = 0);
 		void TileVP(int x, int y, int w, int h, int ix, int iy, int frame = 0);
-		std::shared_ptr<TQSG_PureAutoImage> CopyTiled(unsigned int w, unsigned int h, int insertx=0, int inserty=0);
+		std::shared_ptr<TQSG_PureAutoImage> CopyTiled(unsigned int w, unsigned int h, int insertx = 0, int inserty = 0);
 	};
 
 	/// <summary>
@@ -298,8 +300,8 @@ namespace TrickyUnits {
 	/// </summary>
 	typedef std::shared_ptr<TQSG_PureAutoImage> TQSG_AutoImage;
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(std::string file);
-	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(std::string jcrfile,std::string file);
-	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(jcr6::JT_Dir &jcrdir, std::string file);
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(std::string jcrfile, std::string file);
+	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(jcr6::JT_Dir& jcrdir, std::string file);
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(jcr6::JT_Dir* jcrdir, std::string file);
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_LoadAutoImage(int size, const char* buf);
 	std::shared_ptr<TQSG_PureAutoImage> TQSG_GrabScreen();
@@ -326,7 +328,7 @@ namespace TrickyUnits {
 	TQSG_AutoImageFont TQSG_LoadAutoImageFont(std::string jcrfile, std::string Dir);
 	TQSG_AutoImageFont TQSG_LoadAutoImageFont(jcr6::JT_Dir* jcrdir, std::string File);
 
-	
+
 	class TQSG_True_AS_Screen;
 	typedef std::shared_ptr<TQSG_True_AS_Screen> TQSG_ASScreen;
 	class TQSG_True_AS_Screen {
@@ -349,6 +351,8 @@ namespace TrickyUnits {
 
 		int RCX(int x);
 		int RCY(int y);
+		int RCW(int w);
+		int RCH(int h);
 
 		/// <summary>
 		/// Set Viewport to full
@@ -378,12 +382,50 @@ namespace TrickyUnits {
 		static TQSG_ASScreen Create(unsigned int w, unsigned int h);
 
 		/// <summary>
-		/// Simplistic Draw comment. Please note, viewports and rotation are not taken into account here.
+		/// Simplistic Draw command. Please note, viewports and rotation are not taken into account here.
 		/// </summary>
 		/// <param name="x"></param>
 		/// <param name="y"></param>
 		/// <param name="frame"></param>
-		void Draw(TQSG_AutoImage img,int x, int y, int frame = 0);
+		void Draw(TQSG_AutoImage img, int x, int y, int frame = 0);
+
+		/// <summary>
+		/// XDraw command. Is able to take rotations into account
+		/// </summary>
+		/// <param name="img"></param>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="frame"></param>
+		void XDraw(TQSG_AutoImage img, int x, int y, int frame = 0);
+
+		/// <summary>
+		/// Stretches an image over the AS grid
+		/// </summary>
+		/// <param name="img"></param>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="w"></param>
+		/// <param name="h"></param>
+		/// <param name="frame"></param>
+		void Stretch(TQSG_AutoImage img, int x, int y, int w, int h, int frame = 0);
+
+		/// <summary>
+		/// Plots a pixel
+		/// </summary>
+		/// <param name="x">x coordinate</param>
+		/// <param name="y">y coordinate</param>
+		/// <param name="thin">If set 'false' it will make the pixel the size the AS system wants, if set true it makes 1 pixel really one pixel</param>
+		/// <param name="center">Only affects 'thin=true' setting. If set true with 'thin' pixel is in the center of the AS_Pixel</param>
+		void Plot(int x, int y, bool thin = false, bool center = true);
+
+		/// <summary>
+		/// Draw a rectangle
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="w"></param>
+		/// <param name="h"></param>
+		void Rect(int x, int y, int w, int h);
 
 		/// <summary>
 		/// Gets the viewport and assing all settings to the variables
@@ -399,6 +441,62 @@ namespace TrickyUnits {
 		/// </summary>
 		/// <returns>Rect with the viewport values</returns>
 		SDL_Rect GetViewPort();
+
+		/// <summary>
+		/// Draws based on the boundaries of the viewport (please note, rotation is NOT supported here)
+		/// </summary>
+		/// <param name="img"></param>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="frame"></param>
+		void DrawVP(TQSG_AutoImage img, int x, int y, int frame = 0);
+
+		/// <summary>
+		/// Blitting
+		/// </summary>
+		/// <param name="img"></param>
+		/// <param name="px"></param>
+		/// <param name="py"></param>
+		/// <param name="bsx"></param>
+		/// <param name="bsy"></param>
+		/// <param name="bex"></param>
+		/// <param name="bey"></param>
+		/// <param name="frame"></param>
+		void Blit(TQSG_AutoImage img, int x, int y, int isx, int isy, int iex, int iey, int frame = 0);
+
+
+		/// <summary>
+		/// Tiles the image over the set area. Please note scaling, rotation and flipping settings are all ignored. Color is not ignored.
+		/// </summary>
+		/// <param name="img"></param>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="w"></param>
+		/// <param name="h"></param>
+		/// <param name="frame"></param>
+		/// <param name="ix"></param>
+		/// <param name="iy"></param>
+		void Tile(TQSG_AutoImage img, int x, int y, int frame = 0);
+		void Tile(TQSG_AutoImage img, int x, int y, int w, int h, int frame = 0);
+		void Tile(TQSG_AutoImage img, int x, int y, int w, int h, int ix, int iy, int frame = 0);
+
+		/// <summary>
+		/// Set scale
+		/// </summary>
+		/// <param name="w"></param>
+		/// <param name="h"></param>
+		void Scale(double w, double h);
+
+		void GetAutoScale(double* w, double* h);
+
+
+
+		void AlterRect(SDL_Rect* R);
+		SDL_Rect AlterRect(SDL_Rect R);
+
+		int Width();
+		int Height();
 	};
 
+	TQSG_ASScreen TQSG_CreateAS(unsigned int x, unsigned int y);
 }
