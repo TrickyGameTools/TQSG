@@ -807,6 +807,28 @@ namespace TrickyUnits {
 	void TQSG_SetBlend(TQSG_Blend BM) { BlendMode = (SDL_BlendMode)BM; }
 	TQSG_Blend TQSG_GetBlend() { return (TQSG_Blend)BlendMode; }
 
+	void TQSG_SetBlitzBlend(int i) {
+		/*
+		* Const MASKBLEND=1
+		Const SOLIDBLEND=2
+		Const ALPHABLEND=3
+		Const LIGHTBLEND=4
+		Const SHADEBLEND=5
+		*/
+		switch (i) {
+		case 0:
+		case 3:
+			TQSG_SetBlend(TQSG_Blend::ALPHA);
+			break;
+		case 4:
+			TQSG_SetBlend(TQSG_Blend::ADDITIVE);
+			break;
+		default:
+			cout << "ERROR! Unknown blitz blend (" << i << ")\n";
+			break;
+		}
+	}
+
 
 	void TQSG_Plot(int x, int y) {
 		SDL_SetRenderDrawColor(gRenderer, tcr, tcg, tcb,tcalpha);
@@ -974,7 +996,7 @@ namespace TrickyUnits {
 		r.w = w;
 		r.h = h;		
 		SDL_SetRenderDrawBlendMode(gRenderer,BlendMode);
-		SDL_SetRenderDrawColor(gRenderer, tcr, tcg, tcb, tcalpha);
+		SDL_SetRenderDrawColor(gRenderer, tcr, tcg, tcb, tcalpha);		
 		if (open)
 			SDL_RenderDrawRect(gRenderer, &r);
 		else

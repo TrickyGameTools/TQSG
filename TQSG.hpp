@@ -224,6 +224,7 @@ namespace TrickyUnits {
 	void TQSG_Cls();
 	void TQSG_SetBlend(SDL_BlendMode BM);
 	void TQSG_SetBlend(TQSG_Blend BM);
+	void TQSG_SetBlitzBlend(int i);
 	TQSG_Blend TQSG_GetBlend();
 
 	void TQSG_Plot(int x, int y);
