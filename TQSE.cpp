@@ -54,6 +54,9 @@ namespace TrickyUnits {
     static bool MsMousePressed[maxmousebuttons];
     static bool MsMouseReleased[maxmousebuttons];
 
+    static SDL_MouseWheelEvent wheel;
+    static bool wheelused{ false };
+
     static void InitCheck() {
         if (!TQSE_InitDone) {
             std::cout << "\a\x1b[31mTQSE check done without calling TQSE first!\x1b[0m\n";
@@ -357,6 +360,7 @@ namespace TrickyUnits {
         KeyClean();
         MouseClean();
         stAppTerminate = false;
+        wheelused = false;
         SDL_Event e;
         while (SDL_PollEvent(&e) != 0) {
             switch (e.type) {
@@ -386,6 +390,11 @@ namespace TrickyUnits {
                 MsMouseReleased[pbut] = true;
                 break;
             }
+            case SDL_MOUSEWHEEL: {
+                wheel = e.wheel;
+                wheelused = true;
+            }
+
             case SDL_QUIT:
                 stAppTerminate = true;
                 break;
@@ -404,6 +413,13 @@ namespace TrickyUnits {
     }
     bool TQSE_MouseReleased(int c) {
         return MsMouseReleased[(SDL_KeyCode)c];
+    }
+
+    int TQSE_MouseWheelY() {
+        if (!wheelused)
+            return 0;
+        else
+            return wheel.y;
     }
 
     bool TQSE_KeyDown(SDL_KeyCode c) {
@@ -630,7 +646,8 @@ namespace TrickyUnits {
         if (buttonid == -1) {
             SDL_Log("no selection");
         } else {
-            SDL_Log("selection was %s", buttons[buttonid].text);
+            //SDL_Log("selection was %s", buttons[buttonid].text);
+            SDL_Log("Selection");
         }
         return;
     }

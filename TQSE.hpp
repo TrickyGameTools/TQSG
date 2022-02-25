@@ -59,6 +59,7 @@ namespace TrickyUnits {
 	int TQSE_KeyByName(std::string name);
 	void TQSE_ShowKeyNames();
 	bool TQSE_MouseReleased(int c);
+	int TQSE_MouseWheelY();
 	
 	bool TQSE_Yes(std::string question);
 	void TQSE_Notify(std::string message);
