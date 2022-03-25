@@ -1745,6 +1745,25 @@ namespace TrickyUnits {
 		return ceil(_AutoScaleY * h);
 	}
 
+	int TQSG_True_AS_Screen::TCX(int x) {
+		return ceil(x / _AutoScaleX);
+	}
+
+	int TQSG_True_AS_Screen::TCY(int y) {
+		return ceil(y/_AutoScaleY);
+	}
+
+	int TQSG_True_AS_Screen::TCW(int w) {
+		return ceil(w / _AutoScaleX);
+	}
+
+	int TQSG_True_AS_Screen::TCH(int h) {
+		return ceil(h / _AutoScaleY);
+	}
+
+
+
+
 
 	void TQSG_True_AS_Screen::ViewPort() { ViewPort(0, 0, _Width, _Height); }
 

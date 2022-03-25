@@ -355,6 +355,11 @@ namespace TrickyUnits {
 		int RCW(int w);
 		int RCH(int h);
 
+		int TCX(int x);
+		int TCY(int y);
+		int TCW(int w);
+		int TCH(int h);
+
 		/// <summary>
 		/// Set Viewport to full
 		/// </summary>
