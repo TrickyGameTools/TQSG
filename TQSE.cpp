@@ -393,6 +393,7 @@ namespace TrickyUnits {
             case SDL_MOUSEWHEEL: {
                 wheel = e.wheel;
                 wheelused = true;
+                break;
             }
 
             case SDL_QUIT:
