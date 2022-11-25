@@ -259,9 +259,11 @@ namespace TrickyUnits {
 
 	void TQSG_SetMouse(int x, int y);
 
-	bool TQSG_Init(std::string WindowTitle, int WinWidth = 800, int WinHeight = 600, bool fullscreen = false);
+	bool TQSG_Init(std::string WindowTitle, int WinWidth = 800, int WinHeight = 600, bool fullscreen = false, bool debug = false);
 	void TQSG_Close();
 
+
+	bool TQSG_Full();
 
 
 

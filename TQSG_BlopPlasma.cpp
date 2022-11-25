@@ -190,8 +190,10 @@ namespace TrickyUnits{
 		PicBlop->HotCenter();
 	}
 
+	void SetPlasmaBlop(jcr6::JT_Dir j, std::string Entry) { SetPlasmaBlop(&j, Entry); }
+
 	void SetPlasmaBlop(std::string JCRFile, std::string Entry) {
-		SetPlasmaBlop(&jcr6::Dir(JCRFile), Entry);
+		SetPlasmaBlop(jcr6::Dir(JCRFile), Entry);
 	}
 
 	

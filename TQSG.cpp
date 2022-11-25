@@ -1030,8 +1030,9 @@ namespace TrickyUnits {
 		SDL_RenderDrawLine(gRenderer, x1, y1, x2, y2);		
 	}
 
-	bool TQSG_Init(string WindowTitle,int WinWidth,int WinHeight,bool fullscreen) {
-		printf("Starting graphics screen: %dx%d; fullscreen=%d\n", WinWidth, WinHeight, fullscreen);
+	bool TQSG_Init(string WindowTitle,int WinWidth,int WinHeight,bool fullscreen,bool debug) {
+		if (debug)
+			printf("Starting graphics screen: %dx%d; fullscreen=%d\n", WinWidth, WinHeight, fullscreen);
 		// TODO!
 				//Initialize SDL
 		if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
@@ -1108,6 +1109,11 @@ namespace TrickyUnits {
 		SDL_DestroyRenderer(gRenderer);
 		SDL_DestroyWindow(gWindow);
 
+	}
+
+	bool TQSG_Full() {
+		auto a{ SDL_GetWindowFlags(gWindow) };
+		return a & SDL_WINDOW_FULLSCREEN;
 	}
 
 #ifdef TQSG_AllowTTF

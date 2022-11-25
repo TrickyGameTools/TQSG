@@ -64,7 +64,15 @@ namespace TrickyUnits {
 	bool TQSE_Yes(std::string question);
 	void TQSE_Notify(std::string message);
 
+	// Clear all queued events
 	void TQSE_Flush();
+
+	// Name of the last event scanned
+	std::string TQSE_Name(); 
+
+	// Type of the last event. The enum "SDL_EventType" enum will just be returned.
+	Uint32 TQSE_Type();
+	SDL_Event TQSE_LastPolled();
 
 
 }

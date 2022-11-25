@@ -35,7 +35,13 @@ namespace TrickyUnits {
 
 	TQSA_AutoAudio LoadAudio(jcr6::JT_Dir& MainFile, std::string Entry) {
 		auto ret{ std::make_shared<TQSA_AutoAudioReal>() };
+		SDL_ClearError();
 		ret->Audio()->Load(MainFile, Entry);
+		std::string err = SDL_GetError();
+		if (err != "") {
+			std::cout << "Load audio '" << err << "'\n";
+			return nullptr;
+		}
 		return ret;
 	}
 
